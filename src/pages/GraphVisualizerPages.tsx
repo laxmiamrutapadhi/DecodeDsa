@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import React from "react"
+import React from "react";
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect } from "react";
 import {
   Network,
   Plus,
@@ -21,69 +21,80 @@ import {
   SkipForward,
   MapPin,
   Route,
-} from "lucide-react"
+} from "lucide-react";
 
 // Graph data structures
 interface GraphNode {
-  id: string
-  value: number
-  x: number
-  y: number
-  isHighlighted?: boolean
-  isVisited?: boolean
-  isStart?: boolean
-  isEnd?: boolean
-  distance?: number
-  parent?: string | null
-  color?: string
-  level?: number
+  id: string;
+  value: number;
+  x: number;
+  y: number;
+  isHighlighted?: boolean;
+  isVisited?: boolean;
+  isStart?: boolean;
+  isEnd?: boolean;
+  distance?: number;
+  parent?: string | null;
+  color?: string;
+  level?: number;
 }
 
 interface GraphEdge {
-  id: string
-  from: string
-  to: string
-  weight?: number
-  isHighlighted?: boolean
-  isVisited?: boolean
-  isDirected?: boolean
-  color?: string
+  id: string;
+  from: string;
+  to: string;
+  weight?: number;
+  isHighlighted?: boolean;
+  isVisited?: boolean;
+  isDirected?: boolean;
+  color?: string;
 }
 
 interface GraphState {
-  nodes: GraphNode[]
-  edges: GraphEdge[]
-  isDirected: boolean
-  isWeighted: boolean
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  isDirected: boolean;
+  isWeighted: boolean;
 }
 
-type GraphType = "undirected" | "directed" | "weighted" | "dag"
-type AlgorithmType = "bfs" | "dfs" | "dijkstra" | "bellman-ford" | "kruskal" | "prim" | "topological" | "floyd-warshall"
+type GraphType = "undirected" | "directed" | "weighted" | "dag";
+type AlgorithmType =
+  | "bfs"
+  | "dfs"
+  | "dijkstra"
+  | "bellman-ford"
+  | "kruskal"
+  | "prim"
+  | "topological"
+  | "floyd-warshall";
 
 const algorithmInfo: Record<
   AlgorithmType,
   {
-    name: string
-    description: string
-    complexity: string
-    useCase: string
+    name: string;
+    description: string;
+    complexity: string;
+    useCase: string;
   }
 > = {
   bfs: {
     name: "Breadth-First Search",
-    description: "Explores nodes level by level, finding shortest path in unweighted graphs.",
+    description:
+      "Explores nodes level by level, finding shortest path in unweighted graphs.",
     complexity: "O(V + E)",
     useCase: "Shortest path, level-order traversal, connected components",
   },
   dfs: {
     name: "Depth-First Search",
-    description: "Explores as far as possible along each branch before backtracking.",
+    description:
+      "Explores as far as possible along each branch before backtracking.",
     complexity: "O(V + E)",
     useCase: "Cycle detection, topological sorting, connected components",
   },
   dijkstra: {
     name: "Dijkstra's Algorithm",
-    description: "Finds shortest paths from source to all vertices in weighted graphs.",
+    description:
+      "Finds shortest paths from source to all vertices in weighted graphs.",
     complexity: "O((V + E) log V)",
     useCase: "GPS navigation, network routing, shortest path problems",
   },
@@ -101,7 +112,8 @@ const algorithmInfo: Record<
   },
   prim: {
     name: "Prim's Algorithm",
-    description: "Finds minimum spanning tree by growing from a starting vertex.",
+    description:
+      "Finds minimum spanning tree by growing from a starting vertex.",
     complexity: "O(E log V)",
     useCase: "Network design, approximation algorithms",
   },
@@ -117,7 +129,7 @@ const algorithmInfo: Record<
     complexity: "O(V³)",
     useCase: "All-pairs shortest paths, transitive closure",
   },
-}
+};
 
 function GraphVisualizerPage() {
   const [graph, setGraph] = useState<GraphState>({
@@ -125,56 +137,69 @@ function GraphVisualizerPage() {
     edges: [],
     isDirected: false,
     isWeighted: false,
-  })
+  });
 
-  const [graphType, setGraphType] = useState<GraphType>("undirected")
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState<AlgorithmType>("bfs")
-  const [nodeValue, setNodeValue] = useState("")
-  const [edgeFrom, setEdgeFrom] = useState("")
-  const [edgeTo, setEdgeTo] = useState("")
-  const [edgeWeight, setEdgeWeight] = useState("")
-  const [startNode, setStartNode] = useState("")
-  const [endNode, setEndNode] = useState("")
+  const [graphType, setGraphType] = useState<GraphType>("undirected");
+  const [selectedAlgorithm, setSelectedAlgorithm] =
+    useState<AlgorithmType>("bfs");
+  const [nodeValue, setNodeValue] = useState("");
+  const [edgeFrom, setEdgeFrom] = useState("");
+  const [edgeTo, setEdgeTo] = useState("");
+  const [edgeWeight, setEdgeWeight] = useState("");
+  const [startNode, setStartNode] = useState("");
+  const [endNode, setEndNode] = useState("");
 
   // Animation states
-  const [isAnimating, setIsAnimating] = useState(false)
-  const [animationSpeed, setAnimationSpeed] = useState(500)
-  const [currentStep, setCurrentStep] = useState(0)
-  const [algorithmSteps, setAlgorithmSteps] = useState<any[]>([])
-  const [isPaused, setIsPaused] = useState(false)
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [animationSpeed, setAnimationSpeed] = useState(500);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [algorithmSteps, setAlgorithmSteps] = useState<any[]>([]);
+  const [isPaused, setIsPaused] = useState(false);
 
   // UI states
-  const [operationHistory, setOperationHistory] = useState<string[]>([])
-  const [showCode, setShowCode] = useState(false)
-  const [showTutorial, setShowTutorial] = useState(false)
-  const [_nodeCounter, setNodeCounter] = useState(0)
-  const [selectedNodes, setSelectedNodes] = useState<string[]>([])
-  const [algorithmResult, setAlgorithmResult] = useState<any>(null)
+  const [operationHistory, setOperationHistory] = useState<string[]>([]);
+  const [showCode, setShowCode] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+  // we only need the setter to reflect count changes in any UI that reads it later
+  const [, setNodeCounter] = useState(0);
+  const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
+  const [algorithmResult, setAlgorithmResult] = useState<any>(null);
+  // Keep track of a single active timer to avoid runaway loops
+  const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const algorithmsRequiringStartNode: AlgorithmType[] = ["bfs", "dfs", "dijkstra"];
 
   // Helper functions
+  // Use a ref so IDs are unique even when generating many nodes in a loop
+  const nodeIdCounterRef = React.useRef(0);
   const generateNodeId = () => {
-    setNodeCounter((prev) => prev + 1)
-    return `node-${_nodeCounter}`
-  }
+    nodeIdCounterRef.current += 1;
+    // keep external counter in sync for any UI that displays count
+    setNodeCounter(nodeIdCounterRef.current);
+    return `node-${nodeIdCounterRef.current}`;
+  };
 
-  const generateEdgeId = () => `edge-${Date.now()}-${Math.random()}`
+  const generateEdgeId = () => `edge-${Date.now()}-${Math.random()}`;
 
   const addToHistory = (operation: string) => {
-    const timestamp = new Date().toLocaleTimeString()
-    setOperationHistory((prev) => [`${timestamp}: ${operation}`, ...prev.slice(0, 19)])
-  }
+    const timestamp = new Date().toLocaleTimeString();
+    setOperationHistory((prev) => [
+      `${timestamp}: ${operation}`,
+      ...prev.slice(0, 19),
+    ]);
+  };
 
   // Graph operations
   const addNode = () => {
     if (!nodeValue || isNaN(Number(nodeValue))) {
-      addToHistory("❌ Error: Please enter a valid number for node value")
-      return
+      addToHistory("❌ Error: Please enter a valid number for node value");
+      return;
     }
 
-    const value = Number(nodeValue)
+    const value = Number(nodeValue);
     if (graph.nodes.some((node) => node.value === value)) {
-      addToHistory("❌ Error: Node with this value already exists")
-      return
+      addToHistory("❌ Error: Node with this value already exists");
+      return;
     }
 
     const newNode: GraphNode = {
@@ -183,58 +208,57 @@ function GraphVisualizerPage() {
       x: Math.random() * 600 + 100,
       y: Math.random() * 400 + 100,
       isHighlighted: true,
-    }
+    };
 
     setGraph((prev) => ({
       ...prev,
       nodes: [...prev.nodes, newNode],
-    }))
+    }));
 
-    addToHistory(`✅ Added node with value ${value}`)
-    setNodeValue("")
+    addToHistory(`✅ Added node with value ${value}`);
+    setNodeValue("");
 
     // Remove highlight after animation
     setTimeout(() => {
       setGraph((prev) => ({
         ...prev,
-        nodes: prev.nodes.map((node) => (node.id === newNode.id ? { ...node, isHighlighted: false } : node)),
-      }))
-    }, 1000)
-  }
+        nodes: prev.nodes.map((node) =>
+          node.id === newNode.id ? { ...node, isHighlighted: false } : node
+        ),
+      }));
+    }, 1000);
+  };
 
   const addEdge = () => {
-    const fromValue = Number(edgeFrom)
-    const toValue = Number(edgeTo)
-    const weight = edgeWeight ? Number(edgeWeight) : 1
-
-    if (isNaN(fromValue) || isNaN(toValue)) {
-      addToHistory("❌ Error: Please enter valid node values")
-      return
-    }
-
-    const fromNode = graph.nodes.find((node) => node.value === fromValue)
-    const toNode = graph.nodes.find((node) => node.value === toValue)
+    // Only use node values for edge creation (input is value, not id)
+    const fromNode = graph.nodes.find(
+      (node) => node.value === Number(edgeFrom)
+    );
+    const toNode = graph.nodes.find((node) => node.value === Number(edgeTo));
+    const weight = edgeWeight ? Number(edgeWeight) : 1;
 
     if (!fromNode || !toNode) {
-      addToHistory("❌ Error: One or both nodes don't exist")
-      return
+      addToHistory("❌ Error: One or both nodes don't exist");
+      return;
     }
 
     if (fromNode.id === toNode.id) {
-      addToHistory("❌ Error: Cannot create self-loop")
-      return
+      addToHistory("❌ Error: Cannot create self-loop");
+      return;
     }
 
     // Check if edge already exists
     const edgeExists = graph.edges.some(
       (edge) =>
         (edge.from === fromNode.id && edge.to === toNode.id) ||
-        (!graph.isDirected && edge.from === toNode.id && edge.to === fromNode.id),
-    )
+        (!graph.isDirected &&
+          edge.from === toNode.id &&
+          edge.to === fromNode.id)
+    );
 
     if (edgeExists) {
-      addToHistory("❌ Error: Edge already exists")
-      return
+      addToHistory("❌ Error: Edge already exists");
+      return;
     }
 
     const newEdge: GraphEdge = {
@@ -244,26 +268,32 @@ function GraphVisualizerPage() {
       weight: graph.isWeighted ? weight : undefined,
       isDirected: graph.isDirected,
       isHighlighted: true,
-    }
+    };
 
     setGraph((prev) => ({
       ...prev,
       edges: [...prev.edges, newEdge],
-    }))
+    }));
 
-    addToHistory(`✅ Added edge from ${fromValue} to ${toValue}${graph.isWeighted ? ` (weight: ${weight})` : ""}`)
-    setEdgeFrom("")
-    setEdgeTo("")
-    setEdgeWeight("")
+    addToHistory(
+      `✅ Added edge from ${fromNode.value} to ${toNode.value}${
+        graph.isWeighted ? ` (weight: ${weight})` : ""
+      }`
+    );
+    setEdgeFrom("");
+    setEdgeTo("");
+    setEdgeWeight("");
 
     // Remove highlight after animation
     setTimeout(() => {
       setGraph((prev) => ({
         ...prev,
-        edges: prev.edges.map((edge) => (edge.id === newEdge.id ? { ...edge, isHighlighted: false } : edge)),
-      }))
-    }, 1000)
-  }
+        edges: prev.edges.map((edge) =>
+          edge.id === newEdge.id ? { ...edge, isHighlighted: false } : edge
+        ),
+      }));
+    }, 1000);
+  };
 
   const clearGraph = () => {
     setGraph({
@@ -271,63 +301,65 @@ function GraphVisualizerPage() {
       edges: [],
       isDirected: graphType === "directed" || graphType === "dag",
       isWeighted: graphType === "weighted",
-    })
-    setAlgorithmSteps([])
-    setCurrentStep(0)
-    setAlgorithmResult(null)
-    addToHistory("🗑️ Graph cleared")
-  }
+    });
+    setAlgorithmSteps([]);
+    setCurrentStep(0);
+    setAlgorithmResult(null);
+    addToHistory("🗑️ Graph cleared");
+  };
 
   const generateRandomGraph = () => {
-    const nodeCount = 6 + Math.floor(Math.random() * 4) // 6-9 nodes
-    const nodes: GraphNode[] = []
+    const nodeCount = 6 + Math.floor(Math.random() * 4); // 6-9 nodes
+    const nodes: GraphNode[] = [];
 
     // Create nodes in a circular layout
     for (let i = 0; i < nodeCount; i++) {
-      const angle = (2 * Math.PI * i) / nodeCount
-      const radius = 150
-      const centerX = 400
-      const centerY = 250
+      const angle = (2 * Math.PI * i) / nodeCount;
+      const radius = 150;
+      const centerX = 400;
+      const centerY = 250;
 
       nodes.push({
         id: generateNodeId(),
         value: i + 1,
         x: centerX + radius * Math.cos(angle),
         y: centerY + radius * Math.sin(angle),
-      })
+      });
     }
 
     // Create random edges
-    const edges: GraphEdge[] = []
-    const edgeCount = Math.floor(nodeCount * 1.5) // Moderate connectivity
+    const edges: GraphEdge[] = [];
+    const edgeCount = Math.floor(nodeCount * 1.5); // Moderate connectivity
 
     for (let i = 0; i < edgeCount; i++) {
-      const fromIdx = Math.floor(Math.random() * nodeCount)
-      let toIdx = Math.floor(Math.random() * nodeCount)
+      const fromIdx = Math.floor(Math.random() * nodeCount);
+      let toIdx = Math.floor(Math.random() * nodeCount);
 
       // Avoid self-loops
       while (toIdx === fromIdx) {
-        toIdx = Math.floor(Math.random() * nodeCount)
+        toIdx = Math.floor(Math.random() * nodeCount);
       }
 
-      const from = nodes[fromIdx]
-      const to = nodes[toIdx]
+      const from = nodes[fromIdx];
+      const to = nodes[toIdx];
 
       // Check if edge already exists
       const edgeExists = edges.some(
         (edge) =>
           (edge.from === from.id && edge.to === to.id) ||
-          (!graph.isDirected && edge.from === to.id && edge.to === from.id),
-      )
+          (!graph.isDirected && edge.from === to.id && edge.to === from.id)
+      );
 
       if (!edgeExists) {
         edges.push({
           id: generateEdgeId(),
           from: from.id,
           to: to.id,
-          weight: graph.isWeighted ? Math.floor(Math.random() * 10) + 1 : undefined,
+          weight: graph.isWeighted
+            ? Math.floor(Math.random() * 10) + 1
+            : undefined,
           isDirected: graph.isDirected,
-        })
+        });
       }
     }
 
@@ -335,34 +367,36 @@ function GraphVisualizerPage() {
       ...prev,
       nodes,
       edges,
-    }))
+    }));
 
-    addToHistory(`🎲 Generated random graph with ${nodeCount} nodes and ${edges.length} edges`)
-  }
+    addToHistory(
+      `🎲 Generated random graph with ${nodeCount} nodes and ${edges.length} edges`
+    );
+  };
 
   // Algorithm implementations
   const runBFS = async () => {
     if (!startNode) {
-      addToHistory("❌ Error: Please select a start node")
-      return
+      addToHistory("❌ Error: Please select a start node");
+      return;
     }
 
-    const startValue = Number(startNode)
-    const startNodeObj = graph.nodes.find((node) => node.value === startValue)
+    const startValue = Number(startNode);
+    const startNodeObj = graph.nodes.find((node) => node.value === startValue);
     if (!startNodeObj) {
-      addToHistory("❌ Error: Start node not found")
-      return
+      addToHistory("❌ Error: Start node not found");
+      return;
     }
 
-    setIsAnimating(true)
-    const steps: any[] = []
-    const visited = new Set<string>()
-    const queue = [startNodeObj.id]
-    const distances = new Map<string, number>()
-    const parents = new Map<string, string | null>()
+    setIsAnimating(true);
+    const steps: any[] = [];
+    const visited = new Set<string>();
+    const queue = [startNodeObj.id];
+    const distances = new Map<string, number>();
+    const parents = new Map<string, string | null>();
 
-    distances.set(startNodeObj.id, 0)
-    parents.set(startNodeObj.id, null)
+    distances.set(startNodeObj.id, 0);
+    parents.set(startNodeObj.id, null);
 
     steps.push({
       type: "start",
@@ -371,15 +405,15 @@ function GraphVisualizerPage() {
       queue: [...queue],
       visited: new Set(visited),
       distances: new Map(distances),
-    })
+    });
 
     while (queue.length > 0) {
-      const currentId = queue.shift()!
+      const currentId = queue.shift()!;
 
-      if (visited.has(currentId)) continue
+      if (visited.has(currentId)) continue;
 
-      visited.add(currentId)
-      const currentNode = graph.nodes.find((n) => n.id === currentId)!
+      visited.add(currentId);
+      const currentNode = graph.nodes.find((n) => n.id === currentId)!;
 
       steps.push({
         type: "visit",
@@ -388,31 +422,37 @@ function GraphVisualizerPage() {
         queue: [...queue],
         visited: new Set(visited),
         distances: new Map(distances),
-      })
+      });
 
       // Find neighbors
       const neighbors = graph.edges
-        .filter((edge) => edge.from === currentId || (!graph.isDirected && edge.to === currentId))
+        .filter(
+          (edge) =>
+            edge.from === currentId ||
+            (!graph.isDirected && edge.to === currentId)
+        )
         .map((edge) => (edge.from === currentId ? edge.to : edge.from))
-        .filter((neighborId) => !visited.has(neighborId))
+        .filter((neighborId) => !visited.has(neighborId));
 
       for (const neighborId of neighbors) {
         if (!distances.has(neighborId)) {
-          distances.set(neighborId, distances.get(currentId)! + 1)
-          parents.set(neighborId, currentId)
-          queue.push(neighborId)
+          distances.set(neighborId, distances.get(currentId)! + 1);
+          parents.set(neighborId, currentId);
+          queue.push(neighborId);
 
-          const neighborNode = graph.nodes.find((n) => n.id === neighborId)!
+          const neighborNode = graph.nodes.find((n) => n.id === neighborId)!;
           steps.push({
             type: "discover",
             nodeId: neighborId,
             edgeFrom: currentId,
             edgeTo: neighborId,
-            message: `Discovered node ${neighborNode.value} at distance ${distances.get(neighborId)}`,
+            message: `Discovered node ${
+              neighborNode.value
+            } at distance ${distances.get(neighborId)}`,
             queue: [...queue],
             visited: new Set(visited),
             distances: new Map(distances),
-          })
+          });
         }
       }
     }
@@ -423,51 +463,54 @@ function GraphVisualizerPage() {
       visited: new Set(visited),
       distances: new Map(distances),
       parents: new Map(parents),
-    })
+    });
 
-    setAlgorithmSteps(steps)
-    setCurrentStep(0)
-    addToHistory(`🔍 Started BFS from node ${startValue}`)
-  }
+    setAlgorithmSteps(steps);
+    setCurrentStep(0);
+    addToHistory(`🔍 Started BFS from node ${startValue}`);
+  };
 
   const runDFS = async () => {
     if (!startNode) {
-      addToHistory("❌ Error: Please select a start node")
-      return
+      addToHistory("❌ Error: Please select a start node");
+      return;
     }
 
-    const startValue = Number(startNode)
-    const startNodeObj = graph.nodes.find((node) => node.value === startValue)
+    const startValue = Number(startNode);
+    const startNodeObj = graph.nodes.find((node) => node.value === startValue);
     if (!startNodeObj) {
-      addToHistory("❌ Error: Start node not found")
-      return
+      addToHistory("❌ Error: Start node not found");
+      return;
     }
 
-    setIsAnimating(true)
-    const steps: any[] = []
-    const visited = new Set<string>()
+    setIsAnimating(true);
+    const steps: any[] = [];
+    const visited = new Set<string>();
 
     const dfsRecursive = (nodeId: string) => {
-      if (visited.has(nodeId)) return
+      if (visited.has(nodeId)) return;
 
-      visited.add(nodeId)
-      const currentNode = graph.nodes.find((n) => n.id === nodeId)!
+      visited.add(nodeId);
+      const currentNode = graph.nodes.find((n) => n.id === nodeId)!;
 
       steps.push({
         type: "visit",
         nodeId,
         message: `Visiting node ${currentNode.value}`,
         visited: new Set(visited),
-      })
+      });
 
       // Find neighbors
       const neighbors = graph.edges
-        .filter((edge) => edge.from === nodeId || (!graph.isDirected && edge.to === nodeId))
+        .filter(
+          (edge) =>
+            edge.from === nodeId || (!graph.isDirected && edge.to === nodeId)
+        )
         .map((edge) => (edge.from === nodeId ? edge.to : edge.from))
-        .filter((neighborId) => !visited.has(neighborId))
+        .filter((neighborId) => !visited.has(neighborId));
 
       for (const neighborId of neighbors) {
-        const neighborNode = graph.nodes.find((n) => n.id === neighborId)!
+        const neighborNode = graph.nodes.find((n) => n.id === neighborId)!;
         steps.push({
           type: "discover",
           nodeId: neighborId,
@@ -475,62 +518,163 @@ function GraphVisualizerPage() {
           edgeTo: neighborId,
           message: `Exploring edge to node ${neighborNode.value}`,
           visited: new Set(visited),
-        })
+        });
 
-        dfsRecursive(neighborId)
+        dfsRecursive(neighborId);
       }
-    }
+    };
 
     steps.push({
       type: "start",
       nodeId: startNodeObj.id,
       message: `Starting DFS from node ${startValue}`,
       visited: new Set(),
-    })
+    });
 
-    dfsRecursive(startNodeObj.id)
+    dfsRecursive(startNodeObj.id);
 
     steps.push({
       type: "complete",
       message: "DFS traversal complete",
       visited: new Set(visited),
-    })
+    });
 
-    setAlgorithmSteps(steps)
-    setCurrentStep(0)
-    addToHistory(`🔍 Started DFS from node ${startValue}`)
-  }
+    setAlgorithmSteps(steps);
+    setCurrentStep(0);
+    addToHistory(`🔍 Started DFS from node ${startValue}`);
+  };
+
+  const runTopologicalSort = async () => {
+    if (!graph.isDirected) {
+      addToHistory("❌ Error: Topological sort requires a DAG ");
+      return;
+    }
+
+    setIsAnimating(true);
+    const steps: any[] = [];
+    const inDegree = new Map<string, number>();
+    const queue: string[] = [];
+    const sortedOrder: string[] = [];
+
+    // Calculate in-degrees
+    graph.nodes.forEach((node) => inDegree.set(node.id, 0));
+    graph.edges.forEach((edge) => {
+      inDegree.set(edge.to, (inDegree.get(edge.to) || 0) + 1);
+    });
+
+    // Find nodes with in-degree 0
+    graph.nodes.forEach((node) => {
+      if (inDegree.get(node.id) === 0) {
+        queue.push(node.id);
+      }
+    });
+
+    steps.push({
+      type: "start",
+      message: "Starting Topological Sort",
+      queue: [...queue],
+      sortedOrder: [...sortedOrder],
+      inDegree: new Map(inDegree),
+    });
+
+    while (queue.length > 0) {
+      const u = queue.shift()!;
+      sortedOrder.push(u);
+      const uNode = graph.nodes.find((n) => n.id === u)!;
+
+      steps.push({
+        type: "visit",
+        nodeId: u,
+        message: `Adding node ${uNode.value} to sorted order`,
+        queue: [...queue],
+        sortedOrder: [...sortedOrder],
+        inDegree: new Map(inDegree),
+      });
+
+      const neighbors = graph.edges
+        .filter((edge) => edge.from === u)
+        .map((edge) => edge.to);
+
+      for (const v of neighbors) {
+        const vNode = graph.nodes.find((n) => n.id === v)!;
+        inDegree.set(v, (inDegree.get(v) || 0) - 1);
+
+        steps.push({
+          type: "relax",
+          edgeFrom: u,
+          edgeTo: v,
+          message: `Decreasing in-degree of node ${vNode.value}`,
+          queue: [...queue],
+          sortedOrder: [...sortedOrder],
+          inDegree: new Map(inDegree),
+        });
+
+        if (inDegree.get(v) === 0) {
+          queue.push(v);
+          steps.push({
+            type: "discover",
+            nodeId: v,
+            message: `Node ${vNode.value} has in-degree 0, adding to queue`,
+            queue: [...queue],
+            sortedOrder: [...sortedOrder],
+            inDegree: new Map(inDegree),
+          });
+        }
+      }
+    }
+
+    if (sortedOrder.length !== graph.nodes.length) {
+      steps.push({
+        type: "complete",
+        message: "Graph has a cycle, topological sort not possible",
+        sortedOrder: [],
+      });
+    } else {
+      steps.push({
+        type: "complete",
+        message: "Topological sort complete",
+        sortedOrder: [...sortedOrder],
+      });
+    }
+
+    setAlgorithmSteps(steps);
+    setCurrentStep(0);
+    addToHistory("🚀 Started Topological Sort");
+  };
 
   const runDijkstra = async () => {
     if (!graph.isWeighted) {
-      addToHistory("❌ Error: Dijkstra's algorithm requires a weighted graph")
-      return
+      addToHistory("❌ Error: Dijkstra's algorithm requires a weighted graph");
+      return;
     }
 
     if (!startNode) {
-      addToHistory("❌ Error: Please select a start node")
-      return
+      addToHistory("❌ Error: Please select a start node");
+      return;
     }
 
-    const startValue = Number(startNode)
-    const startNodeObj = graph.nodes.find((node) => node.value === startValue)
+    const startValue = Number(startNode);
+    const startNodeObj = graph.nodes.find((node) => node.value === startValue);
     if (!startNodeObj) {
-      addToHistory("❌ Error: Start node not found")
-      return
+      addToHistory("❌ Error: Start node not found");
+      return;
     }
 
-    setIsAnimating(true)
-    const steps: any[] = []
-    const distances = new Map<string, number>()
-    const parents = new Map<string, string | null>()
-    const visited = new Set<string>()
-    const unvisited = new Set(graph.nodes.map((n) => n.id))
+    setIsAnimating(true);
+    const steps: any[] = [];
+    const distances = new Map<string, number>();
+    const parents = new Map<string, string | null>();
+    const visited = new Set<string>();
+    const unvisited = new Set(graph.nodes.map((n) => n.id));
 
     // Initialize distances
     graph.nodes.forEach((node) => {
-      distances.set(node.id, node.id === startNodeObj.id ? 0 : Number.POSITIVE_INFINITY)
-      parents.set(node.id, null)
-    })
+      distances.set(
+        node.id,
+        node.id === startNodeObj.id ? 0 : Number.POSITIVE_INFINITY
+      );
+      parents.set(node.id, null);
+    });
 
     steps.push({
       type: "start",
@@ -538,54 +682,58 @@ function GraphVisualizerPage() {
       message: `Starting Dijkstra from node ${startValue}`,
       distances: new Map(distances),
       visited: new Set(),
-    })
+    });
 
     while (unvisited.size > 0) {
       // Find unvisited node with minimum distance
-      let currentId: string | null = null
-      let minDistance = Number.POSITIVE_INFINITY
+      let currentId: string | null = null;
+      let minDistance = Number.POSITIVE_INFINITY;
 
       for (const nodeId of Array.from(unvisited)) {
-        const dist = distances.get(nodeId)!
+        const dist = distances.get(nodeId)!;
         if (dist < minDistance) {
-          minDistance = dist
-          currentId = nodeId
+          minDistance = dist;
+          currentId = nodeId;
         }
       }
 
-      if (!currentId || minDistance === Number.POSITIVE_INFINITY) break
+      if (!currentId || minDistance === Number.POSITIVE_INFINITY) break;
 
-      unvisited.delete(currentId)
-      visited.add(currentId)
+      unvisited.delete(currentId);
+      visited.add(currentId);
 
-      const currentNode = graph.nodes.find((n) => n.id === currentId)!
+      const currentNode = graph.nodes.find((n) => n.id === currentId)!;
       steps.push({
         type: "visit",
         nodeId: currentId,
         message: `Visiting node ${currentNode.value} with distance ${minDistance}`,
         distances: new Map(distances),
         visited: new Set(visited),
-      })
+      });
 
       // Update distances to neighbors
       const neighbors = graph.edges
-        .filter((edge) => edge.from === currentId || (!graph.isDirected && edge.to === currentId))
+        .filter(
+          (edge) =>
+            edge.from === currentId ||
+            (!graph.isDirected && edge.to === currentId)
+        )
         .map((edge) => ({
           id: edge.from === currentId ? edge.to : edge.from,
           weight: edge.weight || 1,
           edgeId: edge.id,
         }))
-        .filter((neighbor) => unvisited.has(neighbor.id))
+        .filter((neighbor) => unvisited.has(neighbor.id));
 
       for (const neighbor of neighbors) {
-        const newDistance = distances.get(currentId)! + neighbor.weight
-        const currentDistance = distances.get(neighbor.id)!
+        const newDistance = distances.get(currentId)! + neighbor.weight;
+        const currentDistance = distances.get(neighbor.id)!;
 
         if (newDistance < currentDistance) {
-          distances.set(neighbor.id, newDistance)
-          parents.set(neighbor.id, currentId)
+          distances.set(neighbor.id, newDistance);
+          parents.set(neighbor.id, currentId);
 
-          const neighborNode = graph.nodes.find((n) => n.id === neighbor.id)!
+          const neighborNode = graph.nodes.find((n) => n.id === neighbor.id)!;
           steps.push({
             type: "relax",
             nodeId: neighbor.id,
@@ -594,7 +742,7 @@ function GraphVisualizerPage() {
             message: `Updated distance to node ${neighborNode.value}: ${newDistance}`,
             distances: new Map(distances),
             visited: new Set(visited),
-          })
+          });
         }
       }
     }
@@ -605,25 +753,15 @@ function GraphVisualizerPage() {
       distances: new Map(distances),
       parents: new Map(parents),
       visited: new Set(visited),
-    })
+    });
 
-    setAlgorithmSteps(steps)
-    setCurrentStep(0)
-    addToHistory(`🛣️ Started Dijkstra from node ${startValue}`)
-  }
+    setAlgorithmSteps(steps);
+    setCurrentStep(0);
+    addToHistory(`🛣️ Started Dijkstra from node ${startValue}`);
+  };
 
-  // Animation control
-  const playAnimation = useCallback(() => {
-    if (currentStep >= algorithmSteps.length - 1) {
-      setIsAnimating(false)
-      return
-    }
-
-    if (isPaused) return
-
-    const step = algorithmSteps[currentStep]
-
-    // Apply step to graph visualization
+  // Helper to apply a single step to the graph and log it
+  const applyStep = useCallback((step: any, index: number) => {
     setGraph((prev) => ({
       ...prev,
       nodes: prev.nodes.map((node) => ({
@@ -631,6 +769,7 @@ function GraphVisualizerPage() {
         isHighlighted: step.nodeId === node.id,
         isVisited: step.visited?.has(node.id) || false,
         isStart: step.type === "start" && step.nodeId === node.id,
+        color: step.sortedOrder?.includes(node.id) ? "#22C55E" : undefined,
         distance: step.distances?.get(node.id),
       })),
       edges: prev.edges.map((edge) => ({
@@ -640,67 +779,103 @@ function GraphVisualizerPage() {
           (step.edgeFrom === edge.to && step.edgeTo === edge.from),
         isVisited: step.visited?.has(edge.from) && step.visited?.has(edge.to),
       })),
-    }))
-
-    addToHistory(`📍 Step ${currentStep + 1}: ${step.message}`)
-    setCurrentStep((prev) => prev + 1)
-
-    if (currentStep < algorithmSteps.length - 1) {
-      setTimeout(() => playAnimation(), animationSpeed)
-    } else {
-      setIsAnimating(false)
-      setAlgorithmResult(step)
+    }));
+    if (step?.message) {
+      addToHistory(`📍 Step ${index + 1}: ${step.message}`);
     }
-  }, [currentStep, algorithmSteps, isPaused, animationSpeed])
+  }, []);
 
+  // Single controlled animation loop driven by currentStep
   useEffect(() => {
-    if (isAnimating && !isPaused && algorithmSteps.length > 0) {
-      playAnimation()
+    // Clear any previous timer to avoid multiple concurrent timers
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current as unknown as number);
+      timeoutRef.current = null;
     }
-  }, [isAnimating, isPaused, playAnimation, algorithmSteps.length])
+
+    if (!isAnimating || isPaused || algorithmSteps.length === 0) return;
+
+    if (currentStep >= algorithmSteps.length) {
+      // Completed
+      setIsAnimating(false);
+      const last = algorithmSteps[algorithmSteps.length - 1];
+      if (last) setAlgorithmResult(last);
+      return;
+    }
+
+    const step = algorithmSteps[currentStep];
+    applyStep(step, currentStep);
+
+    timeoutRef.current = setTimeout(() => {
+      setCurrentStep((prev) => prev + 1);
+    }, animationSpeed) as unknown as ReturnType<typeof setTimeout>;
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current as unknown as number);
+        timeoutRef.current = null;
+      }
+    };
+  }, [
+    isAnimating,
+    isPaused,
+    currentStep,
+    animationSpeed,
+    algorithmSteps,
+    applyStep,
+  ]);
 
   const startAnimation = () => {
-    if (algorithmSteps.length === 0) return
-    setIsAnimating(true)
-    setIsPaused(false)
-    setCurrentStep(0)
-  }
+    if (algorithmSteps.length === 0) return;
+    // Clear any pending timer before starting
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current as unknown as number);
+      timeoutRef.current = null;
+    }
+    setIsAnimating(true);
+    setIsPaused(false);
+    setCurrentStep(0);
+  };
 
   const pauseAnimation = () => {
-    setIsPaused(!isPaused)
-  }
+    // Toggle pause and clear any scheduled tick when pausing
+    setIsPaused((prev) => {
+      const next = !prev;
+      if (next && timeoutRef.current) {
+        clearTimeout(timeoutRef.current as unknown as number);
+        timeoutRef.current = null;
+      }
+      return next;
+    });
+  };
 
   const stepForward = () => {
     if (currentStep < algorithmSteps.length - 1) {
-      setCurrentStep((prev) => prev + 1)
-      const step = algorithmSteps[currentStep + 1]
+      // Manual step should not run the auto-loop
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current as unknown as number);
+        timeoutRef.current = null;
+      }
+      if (isAnimating) setIsAnimating(false);
+      if (!isPaused) setIsPaused(true);
 
-      setGraph((prev) => ({
-        ...prev,
-        nodes: prev.nodes.map((node) => ({
-          ...node,
-          isHighlighted: step.nodeId === node.id,
-          isVisited: step.visited?.has(node.id) || false,
-          distance: step.distances?.get(node.id),
-        })),
-        edges: prev.edges.map((edge) => ({
-          ...edge,
-          isHighlighted:
-            (step.edgeFrom === edge.from && step.edgeTo === edge.to) ||
-            (step.edgeFrom === edge.to && step.edgeTo === edge.from),
-          isVisited: step.visited?.has(edge.from) && step.visited?.has(edge.to),
-        })),
-      }))
-
-      addToHistory(`📍 Step ${currentStep + 2}: ${step.message}`)
+      const nextIndex = currentStep + 1;
+      const step = algorithmSteps[nextIndex];
+      applyStep(step, nextIndex);
+      setCurrentStep(nextIndex);
     }
-  }
+  };
 
   const resetAnimation = () => {
-    setIsAnimating(false)
-    setIsPaused(false)
-    setCurrentStep(0)
-    setAlgorithmResult(null)
+    // Stop any running timer and animation
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current as unknown as number);
+      timeoutRef.current = null;
+    }
+    setIsAnimating(false);
+    setIsPaused(false);
+    setCurrentStep(0);
+    setAlgorithmResult(null);
 
     // Reset graph visualization
     setGraph((prev) => ({
@@ -718,8 +893,18 @@ function GraphVisualizerPage() {
         isHighlighted: false,
         isVisited: false,
       })),
-    }))
-  }
+    }));
+  };
+
+  // Cleanup on unmount to prevent stray timers
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current as unknown as number);
+        timeoutRef.current = null;
+      }
+    };
+  }, []);
 
   // Update graph type
   useEffect(() => {
@@ -727,26 +912,29 @@ function GraphVisualizerPage() {
       ...prev,
       isDirected: graphType === "directed" || graphType === "dag",
       isWeighted: graphType === "weighted",
-    }))
-  }, [graphType])
+    }));
+  }, [graphType]);
 
   const runSelectedAlgorithm = () => {
-    resetAnimation()
+    resetAnimation();
 
     switch (selectedAlgorithm) {
       case "bfs":
-        runBFS()
-        break
+        runBFS();
+        break;
       case "dfs":
-        runDFS()
-        break
+        runDFS();
+        break;
       case "dijkstra":
-        runDijkstra()
-        break
+        runDijkstra();
+        break;
+      case "topological":
+        runTopologicalSort();
+        break;
       default:
-        addToHistory(`❌ Algorithm ${selectedAlgorithm} not implemented yet`)
+        addToHistory(`❌ Algorithm ${selectedAlgorithm} not implemented yet`);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
@@ -762,7 +950,9 @@ function GraphVisualizerPage() {
                 <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   Interactive Graph Visualizer
                 </h1>
-                <p className="mt-1 text-gray-600 dark:text-gray-300">Explore graph algorithms with step-by-step visualization</p>
+                <p className="mt-1 text-gray-600 dark:text-gray-300">
+                  Explore graph algorithms with step-by-step visualization
+                </p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -791,33 +981,46 @@ function GraphVisualizerPage() {
           <div className="mb-8 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-200">
             <div className="flex items-center space-x-2 mb-4">
               <Lightbulb className="w-5 h-5 text-blue-600" />
-              <h2 className="text-xl font-bold text-blue-900">Graph Data Structure</h2>
+              <h2 className="text-xl font-bold text-blue-900">
+                Graph Data Structure
+              </h2>
             </div>
             <p className="text-blue-800 mb-4">
-              A graph is a collection of vertices (nodes) connected by edges. Graphs can represent networks,
-              relationships, paths, and many real-world problems.
+              A graph is a collection of vertices (nodes) connected by edges.
+              Graphs can represent networks, relationships, paths, and many
+              real-world problems.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-white dark:bg-slate-800 rounded-lg p-4">
                 <div className="flex items-center space-x-2 mb-2">
                   <Clock className="w-4 h-4 text-green-600" />
-                  <span className="font-semibold text-green-800">Complexity</span>
+                  <span className="font-semibold text-green-800">
+                    Complexity
+                  </span>
                 </div>
-                <p className="text-sm text-green-700">Varies by algorithm: O(V+E) to O(V³)</p>
+                <p className="text-sm text-green-700">
+                  Varies by algorithm: O(V+E) to O(V³)
+                </p>
               </div>
               <div className="bg-white dark:bg-slate-800 rounded-lg p-4">
                 <div className="flex items-center space-x-2 mb-2">
                   <Target className="w-4 h-4 text-blue-600" />
-                  <span className="font-semibold text-blue-800">Applications</span>
+                  <span className="font-semibold text-blue-800">
+                    Applications
+                  </span>
                 </div>
-                <p className="text-sm text-blue-700">Social networks, GPS navigation, web crawling</p>
+                <p className="text-sm text-blue-700">
+                  Social networks, GPS navigation, web crawling
+                </p>
               </div>
               <div className="bg-white dark:bg-slate-800 rounded-lg p-4">
                 <div className="flex items-center space-x-2 mb-2">
                   <Zap className="w-4 h-4 text-purple-600" />
                   <span className="font-semibold text-purple-800">Types</span>
                 </div>
-                <p className="text-sm text-purple-700">Directed, undirected, weighted, unweighted</p>
+                <p className="text-sm text-purple-700">
+                  Directed, undirected, weighted, unweighted
+                </p>
               </div>
             </div>
           </div>
@@ -827,9 +1030,13 @@ function GraphVisualizerPage() {
         <div className="mb-8 bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Graph Type</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                Graph Type
+              </h2>
               <div className="grid grid-cols-2 gap-3">
-                {(["undirected", "directed", "weighted", "dag"] as GraphType[]).map((type) => (
+                {(
+                  ["undirected", "directed", "weighted", "dag"] as GraphType[]
+                ).map((type) => (
                   <button
                     key={type}
                     onClick={() => setGraphType(type)}
@@ -839,16 +1046,22 @@ function GraphVisualizerPage() {
                         : "border-gray-200 dark:border-slate-700 hover:border-gray-300 hover:bg-gray-50"
                     }`}
                   >
-                    <div className="font-semibold capitalize">{type === "dag" ? "DAG" : type}</div>
+                    <div className="font-semibold capitalize">
+                      {type === "dag" ? "DAG" : type}
+                    </div>
                   </button>
                 ))}
               </div>
             </div>
 
             <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Algorithm</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                Algorithm
+              </h2>
               <div className="grid grid-cols-2 gap-3">
-                {(["bfs", "dfs", "dijkstra", "bellman-ford"] as AlgorithmType[]).map((algorithm) => (
+                {(
+                  ["bfs", "dfs", "dijkstra", "bellman-ford", "topological"] as AlgorithmType[]
+                ).map((algorithm) => (
                   <button
                     key={algorithm}
                     onClick={() => setSelectedAlgorithm(algorithm)}
@@ -858,7 +1071,9 @@ function GraphVisualizerPage() {
                         : "border-gray-200 dark:border-slate-700 hover:border-gray-300 hover:bg-gray-50"
                     }`}
                   >
-                    <div className="font-semibold">{algorithmInfo[algorithm].name.split(" ")[0]}</div>
+                    <div className="font-semibold">
+                      {algorithmInfo[algorithm].name.split(" ")[0]}
+                    </div>
                   </button>
                 ))}
               </div>
@@ -867,14 +1082,20 @@ function GraphVisualizerPage() {
 
           {/* Algorithm Info */}
           <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg">
-            <h3 className="font-semibold text-purple-900 mb-2">{algorithmInfo[selectedAlgorithm].name}</h3>
-            <p className="text-purple-800 text-sm mb-2">{algorithmInfo[selectedAlgorithm].description}</p>
+            <h3 className="font-semibold text-purple-900 mb-2">
+              {algorithmInfo[selectedAlgorithm].name}
+            </h3>
+            <p className="text-purple-800 text-sm mb-2">
+              {algorithmInfo[selectedAlgorithm].description}
+            </p>
             <div className="flex flex-wrap gap-4 text-xs">
               <span className="text-green-700">
-                <strong>Complexity:</strong> {algorithmInfo[selectedAlgorithm].complexity}
+                <strong>Complexity:</strong>{" "}
+                {algorithmInfo[selectedAlgorithm].complexity}
               </span>
               <span className="text-blue-700">
-                <strong>Use Case:</strong> {algorithmInfo[selectedAlgorithm].useCase}
+                <strong>Use Case:</strong>{" "}
+                {algorithmInfo[selectedAlgorithm].useCase}
               </span>
             </div>
           </div>
@@ -884,7 +1105,9 @@ function GraphVisualizerPage() {
           {/* Controls Panel */}
           <div className="lg:col-span-1">
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 p-6 sticky top-8">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Graph Controls</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                Graph Controls
+              </h2>
 
               {/* Node Operations */}
               <div className="space-y-4 mb-6">
@@ -949,42 +1172,54 @@ function GraphVisualizerPage() {
 
               {/* Algorithm Controls */}
               <div className="space-y-4 mb-6">
-                <div>
-                  <h3 className="font-semibold text-gray-700 mb-3">Algorithm Parameters</h3>
-                  <div className="space-y-2">
-                    <input
-                      type="number"
-                      value={startNode}
-                      onChange={(e) => setStartNode(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      placeholder="Start node"
-                    />
-                    {(selectedAlgorithm === "dijkstra" || selectedAlgorithm === "bellman-ford") && (
+                {algorithmsRequiringStartNode.includes(selectedAlgorithm) && (
+                  <div>
+                    <h3 className="font-semibold text-gray-700 mb-3">
+                      Algorithm Parameters
+                    </h3>
+                    <div className="space-y-2">
                       <input
                         type="number"
-                        value={endNode}
-                        onChange={(e) => setEndNode(e.target.value)}
+                        value={startNode}
+                        onChange={(e) => setStartNode(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        placeholder="End node (optional)"
+                        placeholder="Start node"
                       />
-                    )}
+                      {(selectedAlgorithm === "dijkstra" ||
+                        selectedAlgorithm === "bellman-ford") && (
+                        <input
+                          type="number"
+                          value={endNode}
+                          onChange={(e) => setEndNode(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          placeholder="End node (optional)"
+                        />
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <button
                   onClick={runSelectedAlgorithm}
-                  disabled={!startNode || graph.nodes.length === 0}
+                  disabled={
+                    (algorithmsRequiringStartNode.includes(selectedAlgorithm) && !startNode) ||
+                    graph.nodes.length === 0
+                  }
                   className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <Search className="w-4 h-4" />
-                  <span>Run {algorithmInfo[selectedAlgorithm].name.split(" ")[0]}</span>
+                  <span>
+                    Run {algorithmInfo[selectedAlgorithm].name.split(" ")[0]}
+                  </span>
                 </button>
               </div>
 
               {/* Animation Controls */}
               {algorithmSteps.length > 0 && (
                 <div className="space-y-4 mb-6">
-                  <h3 className="font-semibold text-gray-700 mb-3">Animation</h3>
+                  <h3 className="font-semibold text-gray-700 mb-3">
+                    Animation
+                  </h3>
                   <div className="flex space-x-2">
                     <button
                       onClick={startAnimation}
@@ -1029,7 +1264,9 @@ function GraphVisualizerPage() {
                       max="2000"
                       step="100"
                       value={animationSpeed}
-                      onChange={(e) => setAnimationSpeed(Number(e.target.value))}
+                      onChange={(e) =>
+                        setAnimationSpeed(Number(e.target.value))
+                      }
                       className="w-full"
                     />
                   </div>
@@ -1072,13 +1309,21 @@ function GraphVisualizerPage() {
                   </div>
                   <div className="flex justify-between">
                     <span>Directed:</span>
-                    <span className={graph.isDirected ? "text-green-600" : "text-red-600"}>
+                    <span
+                      className={
+                        graph.isDirected ? "text-green-600" : "text-red-600"
+                      }
+                    >
                       {graph.isDirected ? "Yes" : "No"}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Weighted:</span>
-                    <span className={graph.isWeighted ? "text-green-600" : "text-red-600"}>
+                    <span
+                      className={
+                        graph.isWeighted ? "text-green-600" : "text-red-600"
+                      }
+                    >
                       {graph.isWeighted ? "Yes" : "No"}
                     </span>
                   </div>
@@ -1092,12 +1337,16 @@ function GraphVisualizerPage() {
             {/* Graph Visualization */}
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Graph Visualization</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  Graph Visualization
+                </h2>
                 <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-300">
-                  <span>Algorithm: {algorithmInfo[selectedAlgorithm].name}</span>
+                  <span>
+                    Algorithm: {algorithmInfo[selectedAlgorithm].name}
+                  </span>
                   {algorithmSteps.length > 0 && (
                     <span>
-                      Step: {currentStep + 1}/{algorithmSteps.length}
+                      Step: {currentStep}/{algorithmSteps.length}
                     </span>
                   )}
                 </div>
@@ -1109,44 +1358,58 @@ function GraphVisualizerPage() {
                   <div className="flex items-center justify-center h-96 text-gray-500">
                     <div className="text-center">
                       <Network className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                      <p className="text-lg font-medium mb-2">No graph to display</p>
-                      <p className="text-sm">Add some nodes and edges to get started!</p>
+                      <p className="text-lg font-medium mb-2">
+                        No graph to display
+                      </p>
+                      <p className="text-sm">
+                        Add some nodes and edges to get started!
+                      </p>
                     </div>
                   </div>
                 ) : (
                   <GraphRenderer
                     graph={graph}
+                    setGraph={setGraph}
                     onNodeClick={(nodeId) => {
                       // Handle node selection for removal
                       if (selectedNodes.includes(nodeId)) {
-                        setSelectedNodes((prev) => prev.filter((id) => id !== nodeId))
+                        setSelectedNodes((prev) =>
+                          prev.filter((id) => id !== nodeId)
+                        );
                       } else {
-                        setSelectedNodes((prev) => [...prev, nodeId])
+                        setSelectedNodes((prev) => [...prev, nodeId]);
                       }
                     }}
                     selectedNodes={selectedNodes}
                   />
                 )}
               </div>
+             
 
               {/* Current Step Info */}
-              {algorithmSteps.length > 0 && currentStep < algorithmSteps.length && (
-                <div className="mt-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <MapPin className="w-4 h-4 text-purple-600" />
-                    <span className="font-semibold text-purple-800">
-                      Step {currentStep + 1}: {algorithmSteps[currentStep]?.type?.toUpperCase()}
-                    </span>
+              {algorithmSteps.length > 0 &&
+                currentStep < algorithmSteps.length && (
+                  <div className="mt-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <MapPin className="w-4 h-4 text-purple-600" />
+                      <span className="font-semibold text-purple-800">
+                        Step {currentStep + 1}:{" "}
+                        {algorithmSteps[currentStep]?.type?.toUpperCase()}
+                      </span>
+                    </div>
+                    <p className="text-purple-700 text-sm">
+                      {algorithmSteps[currentStep]?.message}
+                    </p>
                   </div>
-                  <p className="text-purple-700 text-sm">{algorithmSteps[currentStep]?.message}</p>
-                </div>
-              )}
+                )}
             </div>
 
             {/* Algorithm Result */}
             {algorithmResult && (
               <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Algorithm Result</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                  Algorithm Result
+                </h2>
                 <div className="bg-green-50 rounded-lg p-4 border border-green-200">
                   <div className="flex items-center space-x-2 mb-2">
                     <Route className="w-4 h-4 text-green-600" />
@@ -1155,26 +1418,48 @@ function GraphVisualizerPage() {
                     </span>
                   </div>
                   <div className="text-green-700 text-sm space-y-1">
-                    {algorithmResult.distances && (
-                      <div>
-                        <strong>Distances from start node:</strong>
-                        <div className="mt-1 font-mono text-xs">
-                          {Array.from(algorithmResult.distances.entries() as IterableIterator<[string, number]>).map(
-                            ([nodeId, distance]: [string, number]) => {
-                              const node = graph.nodes.find((n) => n.id === nodeId)
-                              return (
-                                <div key={nodeId}>
-                                  Node {node?.value}: {distance === Number.POSITIVE_INFINITY ? "∞" : distance}
-                                </div>
-                              )
-                            },
-                          )}
+                    {(selectedAlgorithm === "dijkstra" ||
+                      selectedAlgorithm === "bfs") &&
+                      algorithmResult.distances && (
+                        <div>
+                          <p>
+                            <strong>Distances from start node:</strong>
+                          </p>
+                          <ul className="list-disc list-inside">
+                            {Array.from(algorithmResult.distances.entries() as [string, number][])
+                              .sort(([a], [b]) => a.localeCompare(b))
+                              .map(([nodeId, distance]: [string, number]) => {
+                                const node = graph.nodes.find(
+                                  (n) => n.id === nodeId
+                                );
+                                return (
+                                  <li key={nodeId}>
+                                    Node {node ? node.value : "?"}:{" "}
+
+                                    {distance === Number.POSITIVE_INFINITY
+                                      ? "∞"
+                                      : distance}
+                                  </li>
+                                );
+                              })}
+                          </ul>
                         </div>
-                      </div>
-                    )}
-                    {algorithmResult.visited && (
+                      )}
+                    {selectedAlgorithm === "topological" &&
+                    algorithmResult.sortedOrder &&
+                    algorithmResult.sortedOrder.length > 0 && (
                       <div>
-                        <strong>Visited nodes:</strong> {algorithmResult.visited.size}
+                        <p>
+                          <strong>Topological Sort Order:</strong>
+                        </p>
+                        <p className="font-mono text-lg bg-gray-100 p-2 rounded">
+                          {algorithmResult.sortedOrder
+                            .map((nodeId: string) => {
+                              const node = graph.nodes.find((n) => n.id === nodeId);
+                              return node ? node.value : "";
+                            })
+                            .join(" → ")}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -1184,10 +1469,14 @@ function GraphVisualizerPage() {
 
             {/* Operation History */}
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Operation History</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                Operation History
+              </h2>
               <div className="max-h-60 overflow-y-auto space-y-2">
                 {operationHistory.length === 0 ? (
-                  <p className="text-gray-500 italic text-center py-8">No operations performed yet</p>
+                  <p className="text-gray-500 italic text-center py-8">
+                    No operations performed yet
+                  </p>
                 ) : (
                   operationHistory.map((operation, index) => (
                     <div
@@ -1196,12 +1485,12 @@ function GraphVisualizerPage() {
                         operation.includes("❌")
                           ? "bg-red-50 text-red-700 border-red-400"
                           : operation.includes("✅")
-                            ? "bg-green-50 text-green-700 border-green-400"
-                            : operation.includes("🔍") || operation.includes("🛣️")
-                              ? "bg-blue-50 text-blue-700 border-blue-400"
-                              : operation.includes("📍")
-                                ? "bg-purple-50 text-purple-700 border-purple-400"
-                                : "bg-gray-50 text-gray-700 border-gray-400"
+                          ? "bg-green-50 text-green-700 border-green-400"
+                          : operation.includes("🔍") || operation.includes("🛣️")
+                          ? "bg-blue-50 text-blue-700 border-blue-400"
+                          : operation.includes("📍")
+                          ? "bg-purple-50 text-purple-700 border-purple-400"
+                          : "bg-gray-50 text-gray-700 border-gray-400"
                       }`}
                     >
                       {operation}
@@ -1209,6 +1498,43 @@ function GraphVisualizerPage() {
                   ))
                 )}
               </div>
+            </div>
+
+            {/* Practice Questions Section - Card Style */}
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-blue-200 dark:border-blue-700 p-6 mt-8">
+              <h2 className="text-xl font-bold text-blue-700 dark:text-blue-300 mb-4">Practice Questions (Graph)</h2>
+              <ul className="space-y-3">
+                <li>
+                  <a href="https://leetcode.com/problems/course-schedule/" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">Course Schedule (Topological Sort) (LeetCode)</a>
+                </li>
+                <li>
+                  <a href="https://leetcode.com/problems/number-of-connected-components-in-an-undirected-graph/" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">Number of Connected Components in an Undirected Graph (LeetCode)</a>
+                </li>
+                <li>
+                  <a href="https://leetcode.com/problems/shortest-path-in-binary-matrix/" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">Shortest Path in Binary Matrix (BFS) (LeetCode)</a>
+                </li>
+                <li>
+                  <a href="https://leetcode.com/problems/network-delay-time/" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">Network Delay Time (Dijkstra) (LeetCode)</a>
+                </li>
+                <li>
+                  <a href="https://leetcode.com/problems/clone-graph/" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">Clone Graph (DFS/BFS) (LeetCode)</a>
+                </li>
+                <li>
+                  <a href="https://leetcode.com/problems/find-the-town-judge/" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">Find the Town Judge (LeetCode)</a>
+                </li>
+                <li>
+                  <a href="https://practice.geeksforgeeks.org/problems/detect-cycle-in-an-undirected-graph/1" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">Detect Cycle in an Undirected Graph (GFG)</a>
+                </li>
+                <li>
+                  <a href="https://practice.geeksforgeeks.org/problems/shortest-path-in-unweighted-graph/1" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">Shortest Path in Unweighted Graph (GFG)</a>
+                </li>
+                <li>
+                  <a href="https://practice.geeksforgeeks.org/problems/kruskals-algorithm/1" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">Kruskal's Algorithm (GFG)</a>
+                </li>
+                <li>
+                  <a href="https://practice.geeksforgeeks.org/problems/prim%E2%80%99s-algorithm/1" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">Prim's Algorithm (GFG)</a>
+                </li>
+              </ul>
             </div>
 
             {/* Code Implementation */}
@@ -1228,24 +1554,85 @@ function GraphVisualizerPage() {
         </div>
       </main>
     </div>
-  )
+  );
 }
 
 // Graph Renderer Component
 function GraphRenderer({
   graph,
+  setGraph,
   onNodeClick,
   selectedNodes,
 }: {
-  graph: GraphState
-  onNodeClick: (nodeId: string) => void
-  selectedNodes: string[]
+  graph: GraphState;
+  setGraph: React.Dispatch<React.SetStateAction<GraphState>>;
+  onNodeClick: (nodeId: string) => void;
+  selectedNodes: string[];
 }) {
-  const svgRef = React.useRef<SVGSVGElement>(null)
+  const svgRef = React.useRef<SVGSVGElement>(null);
+  const [draggingNodeId, setDraggingNodeId] = React.useState<string | null>(
+    null
+  );
+  const [dragOffset, setDragOffset] = React.useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+
+  // Drag event handlers
+  const handleNodeMouseDown = (e: React.MouseEvent, node: GraphNode) => {
+    e.preventDefault();
+    setDraggingNodeId(node.id);
+    // Store offset from node center to mouse position
+    setDragOffset({
+      x:
+        e.clientX -
+        (svgRef.current?.getBoundingClientRect().left ?? 0) -
+        node.x,
+      y:
+        e.clientY - (svgRef.current?.getBoundingClientRect().top ?? 0) - node.y,
+    });
+  };
+
+  React.useEffect(() => {
+    if (!draggingNodeId) return;
+    const move = (e: MouseEvent) => {
+      if (!draggingNodeId || !dragOffset) return;
+      const svgRect = svgRef.current?.getBoundingClientRect();
+      if (!svgRect) return;
+      // Node center should be at cursor
+      let newX = e.clientX - svgRect.left - dragOffset.x;
+      let newY = e.clientY - svgRect.top - dragOffset.y;
+      const minX = 25,
+        minY = 25,
+        maxX = 800 - 25,
+        maxY = 500 - 25;
+      newX = Math.max(minX, Math.min(maxX, newX));
+      newY = Math.max(minY, Math.min(maxY, newY));
+      // Only update the dragged node's position
+      const updatedNodes = graph.nodes.map((n) =>
+        n.id === draggingNodeId ? { ...n, x: newX, y: newY } : n
+      );
+      // Use setGraph to update state
+      setGraph((prev: GraphState) => ({
+        ...prev,
+        nodes: updatedNodes,
+      }));
+    };
+    const up = () => {
+      setDraggingNodeId(null);
+      setDragOffset(null);
+    };
+    window.addEventListener("mousemove", move);
+    window.addEventListener("mouseup", up);
+    return () => {
+      window.removeEventListener("mousemove", move);
+      window.removeEventListener("mouseup", up);
+    };
+  }, [draggingNodeId, dragOffset, graph, setGraph]);
 
   const handleNodeClick = (nodeId: string) => {
-    onNodeClick(nodeId)
-  }
+    onNodeClick(nodeId);
+  };
 
   return (
     <svg
@@ -1254,54 +1641,66 @@ function GraphRenderer({
       height="500"
       viewBox="0 0 800 500"
       className="border border-gray-200 dark:border-slate-700 rounded-lg bg-white"
+      style={{ userSelect: "none" }}
     >
       {/* Render edges first (so they appear behind nodes) */}
       {graph.edges.map((edge) => {
-        const fromNode = graph.nodes.find((n) => n.id === edge.from)
-        const toNode = graph.nodes.find((n) => n.id === edge.to)
-
-        if (!fromNode || !toNode) return null
-
-        const dx = toNode.x - fromNode.x
-        const dy = toNode.y - fromNode.y
-        const length = Math.sqrt(dx * dx + dy * dy)
-        const unitX = dx / length
-        const unitY = dy / length
-
+        const fromNode = graph.nodes.find((n) => n.id === edge.from);
+        const toNode = graph.nodes.find((n) => n.id === edge.to);
+        if (!fromNode || !toNode) return null;
+        const dx = toNode.x - fromNode.x;
+        const dy = toNode.y - fromNode.y;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        if (!isFinite(length) || length === 0) return null; // Prevent NaN errors
+        const unitX = dx / length;
+        const unitY = dy / length;
         // Adjust line endpoints to not overlap with node circles
-        const nodeRadius = 25
-        const startX = fromNode.x + unitX * nodeRadius
-        const startY = fromNode.y + unitY * nodeRadius
-        const endX = toNode.x - unitX * nodeRadius
-        const endY = toNode.y - unitY * nodeRadius
-
+        const nodeRadius = 25;
+        const startX = fromNode.x + unitX * nodeRadius;
+        const startY = fromNode.y + unitY * nodeRadius;
+        const endX = toNode.x - unitX * nodeRadius;
+        const endY = toNode.y - unitY * nodeRadius;
         return (
           <g key={edge.id}>
             {/* Edge line */}
             <line
-              x1={startX}
-              y1={startY}
-              x2={endX}
-              y2={endY}
-              stroke={edge.isHighlighted ? "#f59e0b" : edge.isVisited ? "#10b981" : "#6b7280"}
+              x1={String(startX)}
+              y1={String(startY)}
+              x2={String(endX)}
+              y2={String(endY)}
+              stroke={
+                edge.isHighlighted
+                  ? "#f59e0b"
+                  : edge.isVisited
+                  ? "#10b981"
+                  : "#6b7280"
+              }
               strokeWidth={edge.isHighlighted ? "3" : "2"}
               className="transition-all duration-300"
             />
-
             {/* Arrow for directed graphs */}
             {graph.isDirected && (
               <polygon
-                points={`${endX},${endY} ${endX - 8 * unitX + 4 * unitY},${endY - 8 * unitY - 4 * unitX} ${endX - 8 * unitX - 4 * unitY},${endY - 8 * unitY + 4 * unitX}`}
-                fill={edge.isHighlighted ? "#f59e0b" : edge.isVisited ? "#10b981" : "#6b7280"}
+                points={`${endX},${endY} ${endX - 8 * unitX + 4 * unitY},${
+                  endY - 8 * unitY - 4 * unitX
+                } ${endX - 8 * unitX - 4 * unitY},${
+                  endY - 8 * unitY + 4 * unitX
+                }`}
+                fill={
+                  edge.isHighlighted
+                    ? "#f59e0b"
+                    : edge.isVisited
+                    ? "#10b981"
+                    : "#6b7280"
+                }
                 className="transition-all duration-300"
               />
             )}
-
             {/* Edge weight */}
             {graph.isWeighted && edge.weight && (
               <text
-                x={(startX + endX) / 2}
-                y={(startY + endY) / 2 - 5}
+                x={String((startX + endX) / 2)}
+                y={String((startY + endY) / 2 - 5)}
                 textAnchor="middle"
                 fill="#374151"
                 fontSize="12"
@@ -1312,7 +1711,7 @@ function GraphRenderer({
               </text>
             )}
           </g>
-        )
+        );
       })}
 
       {/* Render nodes */}
@@ -1327,19 +1726,33 @@ function GraphRenderer({
               node.isStart
                 ? "#10b981"
                 : node.isEnd
-                  ? "#ef4444"
-                  : node.isHighlighted
-                    ? "#f59e0b"
-                    : node.isVisited
-                      ? "#8b5cf6"
-                      : selectedNodes.includes(node.id)
-                        ? "#f97316"
-                        : "#3b82f6"
+                ? "#ef4444"
+                : node.isHighlighted
+                ? "#f59e0b"
+                : node.isVisited
+                ? "#8b5cf6"
+                : selectedNodes.includes(node.id)
+                ? "#f97316"
+                : "#3b82f6"
             }
-            stroke={selectedNodes.includes(node.id) ? "#ea580c" : node.isHighlighted ? "#d97706" : "#1e40af"}
+            stroke={
+              selectedNodes.includes(node.id)
+                ? "#ea580c"
+                : node.isHighlighted
+                ? "#d97706"
+                : "#1e40af"
+            }
             strokeWidth="2"
-            className="cursor-pointer transition-all duration-300 hover:scale-110"
+            className="cursor-pointer transition-all duration-300"
+            style={{
+              filter: "drop-shadow(0 0 8px #6366f1)",
+              transition: "filter 0.2s",
+              ...(draggingNodeId === node.id
+                ? { filter: "drop-shadow(0 0 16px #f59e0b)" }
+                : {}),
+            }}
             onClick={() => handleNodeClick(node.id)}
+            onMouseDown={(e) => handleNodeMouseDown(e, node)}
           />
 
           {/* Node value */}
@@ -1356,35 +1769,50 @@ function GraphRenderer({
           </text>
 
           {/* Distance label for shortest path algorithms */}
-          {node.distance !== undefined && node.distance !== Number.POSITIVE_INFINITY && (
-            <text
-              x={node.x}
-              y={node.y - 35}
-              textAnchor="middle"
-              fill="#374151"
-              fontSize="10"
-              fontWeight="bold"
-              className="bg-white"
-            >
-              d: {node.distance}
-            </text>
-          )}
+          {node.distance !== undefined &&
+            node.distance !== Number.POSITIVE_INFINITY && (
+              <text
+                x={node.x}
+                y={node.y - 35}
+                textAnchor="middle"
+                fill="#374151"
+                fontSize="10"
+                fontWeight="bold"
+                className="bg-white"
+              >
+                d: {node.distance}
+              </text>
+            )}
 
           {/* Start/End labels */}
           {node.isStart && (
-            <text x={node.x} y={node.y + 45} textAnchor="middle" fill="#10b981" fontSize="10" fontWeight="bold">
+            <text
+              x={node.x}
+              y={node.y + 45}
+              textAnchor="middle"
+              fill="#10b981"
+              fontSize="10"
+              fontWeight="bold"
+            >
               START
             </text>
           )}
           {node.isEnd && (
-            <text x={node.x} y={node.y + 45} textAnchor="middle" fill="#ef4444" fontSize="10" fontWeight="bold">
+            <text
+              x={node.x}
+              y={node.y + 45}
+              textAnchor="middle"
+              fill="#ef4444"
+              fontSize="10"
+              fontWeight="bold"
+            >
               END
             </text>
           )}
         </g>
       ))}
     </svg>
-  )
+  );
 }
 
 // Algorithm code implementations
@@ -1515,13 +1943,35 @@ def get_shortest_path(parents, start, end):
     return distances, parents`,
     kruskal: "# Kruskal's algorithm implementation not available",
     prim: "# Prim's algorithm implementation not available",
-    topological: "# Topological sort implementation not available",
-    "floyd-warshall": "# Floyd-Warshall algorithm implementation not available",
-  }
+    topological: `from collections import deque
 
-  return codes[algorithm] || "# Algorithm implementation not available"
+def topological_sort(graph):
+    """Topological sort for a directed acyclic graph"""
+    in_degree = {node: 0 for node in graph}
+    for node in graph:
+        for neighbor in graph[node]:
+            in_degree[neighbor] += 1
+
+    queue = deque([node for node in graph if in_degree[node] == 0])
+    sorted_order = []
+
+    while queue:
+        node = queue.popleft()
+        sorted_order.append(node)
+
+        for neighbor in graph[node]:
+            in_degree[neighbor] -= 1
+            if in_degree[neighbor] == 0:
+                queue.append(neighbor)
+
+    if len(sorted_order) == len(graph):
+        return sorted_order
+    else:
+        return []  # Graph has a cycle`,
+    "floyd-warshall": "# Floyd-Warshall algorithm implementation not available",
+  };
+
+  return codes[algorithm] || "# Algorithm implementation not available";
 }
 
-export default GraphVisualizerPage
-
-
+export default GraphVisualizerPage;

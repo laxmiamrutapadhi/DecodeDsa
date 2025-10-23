@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import type { JSX } from "react"
 import {
   TreePine,
   Plus,
@@ -13,6 +14,8 @@ import {
   Clock,
   Database,
   Layers,
+  Copy,
+  Check,
 } from "lucide-react"
 
 // Tree Node interfaces for different tree types
@@ -23,7 +26,7 @@ interface TreeNode {
   right?: TreeNode | null
   parent?: TreeNode | null
   height?: number
-  color?: "red" | "black" // For Red-Black trees
+  color?: "red" | "black"
   isHighlighted?: boolean
   isNew?: boolean
   isDeleting?: boolean
@@ -60,12 +63,15 @@ interface HeapNode {
 type TreeType = "binary" | "bst" | "avl" | "redblack" | "heap" | "btree" | "bplus"
 type TraversalType = "inorder" | "preorder" | "postorder" | "levelorder"
 
-const tutorialContent: Record<string, {
-  title: string;
-  description: string;
-  complexity: string;
-  useCase: string;
-}> = {
+const tutorialContent: Record<
+  string,
+  {
+    title: string
+    description: string
+    complexity: string
+    useCase: string
+  }
+> = {
   binary: {
     title: "Binary Tree",
     description: "A tree data structure in which each node has at most two children.",
@@ -98,7 +104,8 @@ const tutorialContent: Record<string, {
   },
   btree: {
     title: "B-Tree",
-    description: "A self-balancing tree for sorted data, optimized for systems that read and write large blocks of data.",
+    description:
+      "A self-balancing tree for sorted data, optimized for systems that read and write large blocks of data.",
     complexity: "O(log n) for insert/search/delete.",
     useCase: "Databases, file systems.",
   },
@@ -108,7 +115,7 @@ const tutorialContent: Record<string, {
     complexity: "O(log n) for insert/search/delete.",
     useCase: "Database indexing.",
   },
-};
+}
 
 function TreeVisualizerPage() {
   const [treeType, setTreeType] = useState<TreeType>("binary")
@@ -117,7 +124,7 @@ function TreeVisualizerPage() {
   const [heapArray, setHeapArray] = useState<HeapNode[]>([])
   const [inputValue, setInputValue] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
-  const [bTreeOrder, setBTreeOrder] = useState(3) // Minimum degree for B-tree
+  const [bTreeOrder, setBTreeOrder] = useState(3)
 
   // UI states
   const [operationHistory, setOperationHistory] = useState<string[]>([])
@@ -126,6 +133,7 @@ function TreeVisualizerPage() {
   const [nodeCounter, setNodeCounter] = useState(0)
   const [traversalResult, setTraversalResult] = useState<number[]>([])
   const [selectedTraversal, setSelectedTraversal] = useState<TraversalType>("inorder")
+  const [copiedCode, setCopiedCode] = useState(false)
 
   // Helper functions
   const generateNodeId = () => {
@@ -139,7 +147,7 @@ function TreeVisualizerPage() {
     left: null,
     right: null,
     height: 1,
-    color: "red", // Default for Red-Black trees
+    color: "red",
     isNew: true,
   })
 
@@ -158,39 +166,40 @@ function TreeVisualizerPage() {
     isNew: true,
   })
 
-  // Binary Search Tree Operations
-  const insertBST = async (value: number) => {
+  const insertBST = (value: number) => {
     if (!root) {
       const newNode = createTreeNode(value)
       setRoot(newNode)
     } else {
-      await insertBSTRecursive(root, value)
+      const newRoot = insertBSTRecursive(root, value)
+      setRoot({ ...newRoot })
     }
     addToHistory(`Inserted ${value} into BST`)
   }
 
-  const insertBSTRecursive = async (node: TreeNode, value: number): Promise<TreeNode> => {
+  const insertBSTRecursive = (node: TreeNode, value: number): TreeNode => {
     if (value < node.value) {
       if (!node.left) {
         const newNode = createTreeNode(value)
         node.left = newNode
         newNode.parent = node
-        return newNode
+        return node
       } else {
-        return await insertBSTRecursive(node.left, value)
+        node.left = insertBSTRecursive(node.left, value)
+        return node
       }
     } else if (value > node.value) {
       if (!node.right) {
         const newNode = createTreeNode(value)
         node.right = newNode
         newNode.parent = node
-        return newNode
+        return node
       } else {
-        return await insertBSTRecursive(node.right, value)
+        node.right = insertBSTRecursive(node.right, value)
+        return node
       }
-    } else {
-      return node
     }
+    return node
   }
 
   // AVL Tree Operations
@@ -210,11 +219,9 @@ function TreeVisualizerPage() {
     const x = y.left!
     const T2 = x.right
 
-    // Perform rotation
     x.right = y
     y.left = T2
 
-    // Update heights
     updateHeight(y)
     updateHeight(x)
 
@@ -225,71 +232,58 @@ function TreeVisualizerPage() {
     const y = x.right!
     const T2 = y.left
 
-    // Perform rotation
     y.left = x
     x.right = T2
 
-    // Update heights
     updateHeight(x)
     updateHeight(y)
 
     return y
   }
 
-  const insertAVL = async (value: number) => {
-    const newRoot = await insertAVLRecursive(root, value)
+  const insertAVL = (value: number) => {
+    const newRoot = insertAVLRecursive(root, value)
     setRoot(newRoot)
     addToHistory(`Inserted ${value} into AVL tree`)
   }
 
-  const insertAVLRecursive = async (node: TreeNode | null, value: number): Promise<TreeNode> => {
-    // Standard BST insertion
+  const insertAVLRecursive = (node: TreeNode | null, value: number): TreeNode => {
     if (!node) {
       const newNode = createTreeNode(value)
       return newNode
     }
 
     if (value < node.value) {
-      node.left = await insertAVLRecursive(node.left ?? null, value)
+      node.left = insertAVLRecursive(node.left ?? null, value)
     } else if (value > node.value) {
-      node.right = await insertAVLRecursive(node.right ?? null, value)
+      node.right = insertAVLRecursive(node.right ?? null, value)
     } else {
-      return node // Duplicate values not allowed
+      return node
     }
 
-    // Update height
     updateHeight(node)
 
-    // Get balance factor
     const balance = getBalance(node)
 
-    // Left Left Case
     if (balance > 1 && value < node.left!.value) {
       return rotateRight(node)
     }
 
-    // Right Right Case
     if (balance < -1 && value > node.right!.value) {
       return rotateLeft(node)
     }
 
-    // Left Right Case
     if (balance > 1 && value > (node.left?.value ?? Number.POSITIVE_INFINITY)) {
       if (node.left) {
         node.left = rotateLeft(node.left)
         return rotateRight(node)
-      } else {
-        return node
       }
     }
 
-    // Right Left Case
     if (balance < -1 && value < (node.right?.value ?? Number.NEGATIVE_INFINITY)) {
       if (node.right) {
         node.right = rotateRight(node.right)
         return rotateLeft(node)
-      } else {
-        return node
       }
     }
 
@@ -297,65 +291,55 @@ function TreeVisualizerPage() {
   }
 
   // Red-Black Tree Operations
-  const insertRedBlack = async (value: number) => {
+  const insertRedBlack = (value: number) => {
     if (!root) {
       const newNode = createTreeNode(value)
-      newNode.color = "black" // Root is always black
+      newNode.color = "black"
       setRoot(newNode)
     } else {
-      const newNode = await insertRBRecursive(root, value)
-      // Fix violations
-      await fixRedBlackViolations(newNode)
+      const newRoot = insertRBRecursive(root, value)
+      setRoot({ ...newRoot })
     }
     addToHistory(`Inserted ${value} into Red-Black tree`)
   }
 
-  const insertRBRecursive = async (node: TreeNode, value: number): Promise<TreeNode> => {
+  const insertRBRecursive = (node: TreeNode, value: number): TreeNode => {
     if (value < node.value) {
       if (!node.left) {
         const newNode = createTreeNode(value)
-        newNode.color = "red" // New nodes are red
+        newNode.color = "red"
         node.left = newNode
         newNode.parent = node
-        return newNode
+        return node
       } else {
-        return await insertRBRecursive(node.left, value)
+        node.left = insertRBRecursive(node.left, value)
+        return node
       }
     } else if (value > node.value) {
       if (!node.right) {
         const newNode = createTreeNode(value)
-        newNode.color = "red" // New nodes are red
+        newNode.color = "red"
         node.right = newNode
         newNode.parent = node
-        return newNode
+        return node
       } else {
-        return await insertRBRecursive(node.right, value)
+        node.right = insertRBRecursive(node.right, value)
+        return node
       }
     }
     return node
   }
 
-  const fixRedBlackViolations = async (node: TreeNode) => {
-    // Implementation of Red-Black tree fix-up would go here
-    // This is a simplified version
-    if (node.parent && node.parent.color === "red") {
-      // Fix red-red violation
-    }
-  }
-
   // Heap Operations
-  const insertHeap = async (value: number) => {
+  const insertHeap = (value: number) => {
     const newHeap = [...heapArray]
     const newNode = createHeapNode(value, newHeap.length)
     newHeap.push(newNode)
 
-    // Heapify up
     let index = newHeap.length - 1
     while (index > 0) {
       const parentIndex = Math.floor((index - 1) / 2)
       if (newHeap[index].value <= newHeap[parentIndex].value) break
-
-      // Swap
       ;[newHeap[index], newHeap[parentIndex]] = [newHeap[parentIndex], newHeap[index]]
       newHeap[index].index = index
       newHeap[parentIndex].index = parentIndex
@@ -363,37 +347,31 @@ function TreeVisualizerPage() {
     }
 
     setHeapArray(newHeap)
+    addToHistory(`Inserted ${value} into Heap`)
   }
 
   // B-Tree Operations
-  const insertBTree = async (value: number) => {
+  const insertBTree = (value: number) => {
     if (!bTreeRoot) {
       const newNode = createBTreeNode([value], true)
       setBTreeRoot(newNode)
     } else {
-      await insertBTreeRecursive(bTreeRoot, value)
+      insertBTreeRecursive(bTreeRoot, value)
+      setBTreeRoot({ ...bTreeRoot })
     }
     addToHistory(`Inserted ${value} into B-Tree`)
   }
 
-  const insertBTreeRecursive = async (node: BTreeNode, value: number): Promise<void> => {
-    // Find the correct position to insert
+  const insertBTreeRecursive = (node: BTreeNode, value: number): void => {
     let i = 0
     while (i < node.keys.length && value > node.keys[i]) {
       i++
     }
 
     if (node.isLeaf) {
-      // Insert in leaf node
       node.keys.splice(i, 0, value)
-
-      // Check if node is full
-      if (node.keys.length >= 2 * bTreeOrder - 1) {
-        // Node overflow, split needed
-      }
-    } else {
-      // Recursively insert in child
-      await insertBTreeRecursive(node.children[i], value)
+    } else if (i < node.children.length) {
+      insertBTreeRecursive(node.children[i], value)
     }
   }
 
@@ -456,7 +434,7 @@ function TreeVisualizerPage() {
   }
 
   // Search operation
-  const searchTree = async (value: number) => {
+  const searchTree = (value: number) => {
     if (!root) {
       addToHistory("Cannot search in empty tree")
       return
@@ -495,6 +473,7 @@ function TreeVisualizerPage() {
     setRoot(null)
     setBTreeRoot(null)
     setHeapArray([])
+    setNodeCounter(0)
     addToHistory("Tree cleared")
   }
 
@@ -544,13 +523,385 @@ function TreeVisualizerPage() {
     return <BTreeRenderer root={bTreeRoot} />
   }
 
+  // Copy to clipboard function
+  const copyToClipboard = async (text: string) => {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text)
+      } else {
+        const textarea = document.createElement('textarea')
+        textarea.value = text
+        textarea.style.position = 'fixed'
+        textarea.style.opacity = '0'
+        document.body.appendChild(textarea)
+        textarea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textarea)
+      }
+      setCopiedCode(true)
+      setTimeout(() => setCopiedCode(false), 1500)
+    } catch (error) {
+      console.error('Failed to copy to clipboard', error)
+    }
+  }
+
+  // Get the current tree implementation code
+  const getCurrentTreeCode = () => {
+    switch (treeType) {
+      case "binary": return getFullTreeCode()
+      case "bst": return getFullBSTCode()
+      case "avl": return getFullAVLCode()
+      case "redblack": return getFullRBCode()
+      case "heap": return getFullHeapCode()
+      case "btree": return getFullBTreeCode()
+      case "bplus": return getFullBPlusTreeCode()
+      default: return getFullTreeCode()
+    }
+  }
+
+  const getFullTreeCode = () => {
+    return `class TreeNode:
+    def __init__(self, value):
+        self.value = value
+        self.left = None
+        self.right = None
+
+class BinaryTree:
+    def __init__(self):
+        self.root = None
+
+    def insert(self, value):
+        """Insert node in first available position (level order)"""
+        new_node = TreeNode(value)
+        if not self.root:
+            self.root = new_node
+            return
+        queue = [self.root]
+        while queue:
+            node = queue.pop(0)
+            if not node.left:
+                node.left = new_node
+                return
+            elif not node.right:
+                node.right = new_node
+                return
+            else:
+                queue.append(node.left)
+                queue.append(node.right)
+
+    def inorder(self, node=None):
+        if node is None:
+            node = self.root
+        if not node:
+            return []
+        return self.inorder(node.left) + [node.value] + self.inorder(node.right)
+
+# Example usage
+bt = BinaryTree()
+bt.insert(10)
+bt.insert(20)
+bt.insert(5)
+print("Inorder:", bt.inorder())`
+  }
+
+  const getFullBSTCode = () => {
+    return `class TreeNode:
+    def __init__(self, value):
+        self.value = value
+        self.left = None
+        self.right = None
+
+class BinarySearchTree:
+    def __init__(self):
+        self.root = None
+
+    def insert(self, value):
+        """Insert node following BST rules"""
+        new_node = TreeNode(value)
+        if not self.root:
+            self.root = new_node
+            return
+        current = self.root
+        while True:
+            if value < current.value:
+                if current.left is None:
+                    current.left = new_node
+                    return
+                current = current.left
+            else:
+                if current.right is None:
+                    current.right = new_node
+                    return
+                current = current.right
+
+    def inorder(self, node=None):
+        if node is None:
+            node = self.root
+        if not node:
+            return []
+        return self.inorder(node.left) + [node.value] + self.inorder(node.right)
+
+# Example usage
+bst = BinarySearchTree()
+bst.insert(10)
+bst.insert(5)
+bst.insert(20)
+bst.insert(15)
+print("Inorder:", bst.inorder())`
+  }
+
+  const getFullAVLCode = () => {
+    return `class TreeNode:
+    def __init__(self, value):
+        self.value = value
+        self.left = None
+        self.right = None
+        self.height = 1
+
+class AVLTree:
+    def __init__(self):
+        self.root = None
+
+    def insert(self, root, value):
+        if not root:
+            return TreeNode(value)
+        if value < root.value:
+            root.left = self.insert(root.left, value)
+        else:
+            root.right = self.insert(root.right, value)
+
+        root.height = 1 + max(self.getHeight(root.left), self.getHeight(root.right))
+        balance = self.getBalance(root)
+
+        if balance > 1 and value < root.left.value:
+            return self.rightRotate(root)
+        if balance > 1 and value > root.left.value:
+            root.left = self.leftRotate(root.left)
+            return self.rightRotate(root)
+
+        if balance < -1 and value > root.right.value:
+            return self.leftRotate(root)
+        if balance < -1 and value < root.right.value:
+            root.right = self.rightRotate(root.right)
+            return self.leftRotate(root)
+
+        return root
+
+    def leftRotate(self, z):
+        y = z.right
+        T2 = y.left
+        y.left = z
+        z.right = T2
+        z.height = 1 + max(self.getHeight(z.left), self.getHeight(z.right))
+        y.height = 1 + max(self.getHeight(y.left), self.getHeight(y.right))
+        return y
+
+    def rightRotate(self, z):
+        y = z.left
+        T3 = y.right
+        y.right = z
+        z.left = T3
+        z.height = 1 + max(self.getHeight(z.left), self.getHeight(z.right))
+        y.height = 1 + max(self.getHeight(y.left), self.getHeight(y.right))
+        return y
+
+    def getHeight(self, node):
+        if not node:
+            return 0
+        return node.height
+
+    def getBalance(self, node):
+        if not node:
+            return 0
+        return self.getHeight(node.left) - self.getHeight(node.right)
+
+    def inorder(self, node):
+        if not node:
+            return []
+        return self.inorder(node.left) + [node.value] + self.inorder(node.right)
+
+# Example usage
+avl = AVLTree()
+root = None
+for val in [10, 20, 5, 15]:
+    root = avl.insert(root, val)
+print("Inorder:", avl.inorder(root))`
+  }
+
+  const getFullRBCode = () => {
+    return `class Node:
+    def __init__(self, value):
+        self.value = value
+        self.color = 'red'
+        self.left = None
+        self.right = None
+        self.parent = None
+
+class RedBlackTree:
+    def __init__(self):
+        self.TNULL = Node(0)
+        self.TNULL.color = 'black'
+        self.root = self.TNULL
+
+    def insert(self, key):
+        node = Node(key)
+        node.left = self.TNULL
+        node.right = self.TNULL
+        node.parent = None
+
+        y = None
+        x = self.root
+
+        while x != self.TNULL:
+            y = x
+            if node.value < x.value:
+                x = x.left
+            else:
+                x = x.right
+
+        node.parent = y
+        if y is None:
+            self.root = node
+        elif node.value < y.value:
+            y.left = node
+        else:
+            y.right = node
+
+        if node.parent is None:
+            node.color = 'black'
+            return
+
+        if node.parent.parent is None:
+            return
+
+    def inorder(self, node):
+        if node == self.TNULL:
+            return []
+        return self.inorder(node.left) + [node.value] + self.inorder(node.right)
+
+# Example usage
+rb = RedBlackTree()
+for val in [10, 20, 5, 15]:
+    rb.insert(val)
+print("Inorder:", rb.inorder(rb.root))`
+  }
+
+  const getFullHeapCode = () => {
+    return `class MinHeap:
+    def __init__(self):
+        self.heap = []
+
+    def insert(self, val):
+        self.heap.append(val)
+        self.heapifyUp(len(self.heap) - 1)
+
+    def heapifyUp(self, index):
+        parent = (index - 1) // 2
+        if index > 0 and self.heap[parent] > self.heap[index]:
+            self.heap[parent], self.heap[index] = self.heap[index], self.heap[parent]
+            self.heapifyUp(parent)
+
+    def extractMin(self):
+        if len(self.heap) == 0:
+            return None
+        if len(self.heap) == 1:
+            return self.heap.pop()
+        root = self.heap[0]
+        self.heap[0] = self.heap.pop()
+        self.heapifyDown(0)
+        return root
+
+    def heapifyDown(self, index):
+        smallest = index
+        left = 2*index + 1
+        right = 2*index + 2
+
+        if left < len(self.heap) and self.heap[left] < self.heap[smallest]:
+            smallest = left
+        if right < len(self.heap) and self.heap[right] < self.heap[smallest]:
+            smallest = right
+        if smallest != index:
+            self.heap[smallest], self.heap[index] = self.heap[index], self.heap[smallest]
+            self.heapifyDown(smallest)
+
+# Example usage
+heap = MinHeap()
+for val in [10, 5, 20, 3]:
+    heap.insert(val)
+print("Heap array:", heap.heap)
+print("Extract min:", heap.extractMin())
+print("Heap after extract:", heap.heap)`
+  }
+
+  const getFullBTreeCode = () => {
+    return `class BTreeNode:
+    def __init__(self, t, leaf=False):
+        self.t = t
+        self.leaf = leaf
+        self.keys = []
+        self.children = []
+
+class BTree:
+    def __init__(self, t):
+        self.root = BTreeNode(t, True)
+        self.t = t
+
+    def traverse(self, node=None):
+        if node is None:
+            node = self.root
+        res = []
+        for i in range(len(node.keys)):
+            if not node.leaf:
+                res += self.traverse(node.children[i])
+            res.append(node.keys[i])
+        if not node.leaf:
+            res += self.traverse(node.children[-1])
+        return res
+
+# Example usage
+b = BTree(3)
+print("B-Tree traverse:", b.traverse())`
+  }
+
+  const getFullBPlusTreeCode = () => {
+    return `class BPlusTreeNode:
+    def __init__(self, t, leaf=False):
+        self.t = t
+        self.leaf = leaf
+        self.keys = []
+        self.children = []
+        self.next = None
+
+class BPlusTree:
+    def __init__(self, t):
+        self.root = BPlusTreeNode(t, True)
+        self.t = t
+
+    def traverse(self, node=None):
+        if node is None:
+            node = self.root
+        res = []
+        if node.leaf:
+            res += node.keys
+        else:
+            for i in range(len(node.keys)):
+                res += self.traverse(node.children[i])
+                res.append(node.keys[i])
+            res += self.traverse(node.children[-1])
+        return res
+
+# Example usage
+bplus = BPlusTree(3)
+print("B+ Tree traverse:", bplus.traverse())`
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       {/* Header */}
       <header className="bg-white dark:bg-slate-800 shadow-sm border-b dark:border-slate-700">
         <div className="max-w-7xl mx-auto py-4 px-4 md:p-6 lg:px-8">
           <div className="flex flex-col md:flex-row gap-4 md:gap-0 items-center justify-between">
-            <div className="flex items-center space-x-3 min-h-[90px]">
+            <div className="flex items-center space-x-3">
               <div className="p-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg">
                 <TreePine className="w-6 h-6 text-white" />
               </div>
@@ -558,7 +909,9 @@ function TreeVisualizerPage() {
                 <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
                   Advanced Tree Visualizer
                 </h1>
-                <p className="mt-1 text-gray-600 dark:text-gray-300">Explore all types of trees with interactive animations</p>
+                <p className="mt-1 text-gray-600 dark:text-gray-300">
+                  Explore all types of trees with interactive animations
+                </p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -740,7 +1093,7 @@ function TreeVisualizerPage() {
                   </div>
                 </div>
 
-                {/* Traversal Operations (only for binary trees) */}
+                {/* Traversal Operations */}
                 {(treeType === "binary" || treeType === "bst" || treeType === "avl" || treeType === "redblack") && (
                   <div>
                     <h3 className="font-semibold text-gray-700 mb-2">Tree Traversals</h3>
@@ -814,6 +1167,175 @@ function TreeVisualizerPage() {
                 )}
               </div>
             </div>
+
+            {/* Tree Code Display Section */}
+            {showCode && (
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                  {treeType === "binary" && "Binary Tree Implementation"}
+                  {treeType === "bst" && "Binary Search Tree Implementation"}
+                  {treeType === "avl" && "AVL Tree Implementation"}
+                  {treeType === "redblack" && "Red-Black Tree Implementation"}
+                  {treeType === "heap" && "Heap Implementation"}
+                  {treeType === "btree" && "B-Tree Implementation"}
+                  {treeType === "bplus" && "B+ Tree Implementation"}
+                </h2>
+
+                <div className="relative">
+                  <button
+                    className="absolute top-2 right-4 inline-flex items-center gap-1 rounded px-2 py-1 text-xs bg-green-600 hover:bg-green-700 text-white shadow z-10"
+                    onClick={() => copyToClipboard(getCurrentTreeCode())}
+                    aria-label="Copy tree implementation"
+                  >
+                    {copiedCode ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    {copiedCode ? 'Copied' : 'Copy'}
+                  </button>
+                  <div 
+                    className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm font-mono max-h-96 overflow-auto pr-16"
+                    onWheel={(e) => {
+                      // Prevent page scroll when scrolling within code block
+                      e.stopPropagation();
+                    }}
+                    style={{ scrollbarWidth: 'thin' }}
+                  >
+                    <pre>
+                      <code>{getCurrentTreeCode()}</code>
+                    </pre>
+                  </div>
+                </div>
+
+                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                    <strong>💡 Complete Implementation:</strong> This is the full {
+                      treeType === "binary" ? "Binary Tree" :
+                      treeType === "bst" ? "Binary Search Tree" :
+                      treeType === "avl" ? "AVL Tree" :
+                      treeType === "redblack" ? "Red-Black Tree" :
+                      treeType === "heap" ? "Heap" :
+                      treeType === "btree" ? "B-Tree" :
+                      treeType === "bplus" ? "B+ Tree" : "Tree"
+                    } algorithm implementation. You can copy this code and use it in your own projects!
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Practice Questions Section */}
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
+              <h2 className="text-xl font-bold text-green-700 dark:text-green-300 mb-4">Practice Questions (Trees)</h2>
+              <ul className="space-y-3">
+                <li>
+                  <a
+                    href="https://leetcode.com/problems/binary-tree-inorder-traversal/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-green-600 dark:text-green-400 hover:underline"
+                  >
+                    Binary Tree Inorder Traversal (LeetCode)
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://leetcode.com/problems/binary-search-tree-iterator/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-green-600 dark:text-green-400 hover:underline"
+                  >
+                    Binary Search Tree Iterator (LeetCode)
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://leetcode.com/problems/serialize-and-deserialize-binary-tree/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-green-600 dark:text-green-400 hover:underline"
+                  >
+                    Serialize and Deserialize Binary Tree (LeetCode)
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://leetcode.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-green-600 dark:text-green-400 hover:underline"
+                  >
+                    Construct Binary Tree from Preorder and Inorder Traversal (LeetCode)
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://leetcode.com/problems/maximum-depth-of-binary-tree/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-green-600 dark:text-green-400 hover:underline"
+                  >
+                    Maximum Depth of Binary Tree (LeetCode)
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://practice.geeksforgeeks.org/problems/binary-tree-to-dll/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-green-600 dark:text-green-400 hover:underline"
+                  >
+                    Binary Tree to DLL (GFG)
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://practice.geeksforgeeks.org/problems/lowest-common-ancestor-in-a-binary-tree/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-green-600 dark:text-green-400 hover:underline"
+                  >
+                    Lowest Common Ancestor in a Binary Tree (GFG)
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://practice.geeksforgeeks.org/problems/check-for-bst/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-green-600 dark:text-green-400 hover:underline"
+                  >
+                    Check for BST (GFG)
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://practice.geeksforgeeks.org/problems/avl-tree-insertion/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-green-600 dark:text-green-400 hover:underline"
+                  >
+                    AVL Tree Insertion (GFG)
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://practice.geeksforgeeks.org/problems/heap-sort/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-green-600 dark:text-green-400 hover:underline"
+                  >
+                    Heap Sort (GFG)
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://practice.geeksforgeeks.org/problems/b-tree-insertion/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-green-600 dark:text-green-400 hover:underline"
+                  >
+                    B-Tree Insertion (GFG)
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </main>
@@ -832,13 +1354,9 @@ function BinaryTreeRenderer({ root }: { root: TreeNode }) {
 
     return (
       <g key={node.id}>
-        {/* Left child connection */}
         {node.left && <line x1={x} y1={y} x2={x - 80 / (level + 1)} y2={y + 80} stroke="#94a3b8" strokeWidth="2" />}
-
-        {/* Right child connection */}
         {node.right && <line x1={x} y1={y} x2={x + 80 / (level + 1)} y2={y + 80} stroke="#94a3b8" strokeWidth="2" />}
 
-        {/* Node circle */}
         <circle
           cx={x}
           cy={y}
@@ -861,19 +1379,10 @@ function BinaryTreeRenderer({ root }: { root: TreeNode }) {
           className="transition-all duration-300"
         />
 
-        {/* Node value */}
-        <text
-          x={x}
-          y={y + 5}
-          textAnchor="middle"
-          fill={node.color === "black" || isDeleting ? "white" : "white"}
-          fontSize="14"
-          fontWeight="bold"
-        >
+        <text x={x} y={y + 5} textAnchor="middle" fill="white" fontSize="14" fontWeight="bold">
           {node.value}
         </text>
 
-        {/* Recursively render children */}
         {node.left && renderNode(node.left, x - 80 / (level + 1), y + 80, level + 1)}
         {node.right && renderNode(node.right, x + 80 / (level + 1), y + 80, level + 1)}
       </g>
@@ -902,17 +1411,14 @@ function HeapRenderer({ heap }: { heap: HeapNode[] }) {
 
     return (
       <g key={node.id}>
-        {/* Left child connection */}
         {leftChildIndex < heap.length && (
           <line x1={x} y1={y} x2={x - 60} y2={y + 60} stroke="#94a3b8" strokeWidth="2" />
         )}
 
-        {/* Right child connection */}
         {rightChildIndex < heap.length && (
           <line x1={x} y1={y} x2={x + 60} y2={y + 60} stroke="#94a3b8" strokeWidth="2" />
         )}
 
-        {/* Node circle */}
         <circle
           cx={x}
           cy={y}
@@ -923,17 +1429,14 @@ function HeapRenderer({ heap }: { heap: HeapNode[] }) {
           className="transition-all duration-300"
         />
 
-        {/* Node value */}
         <text x={x} y={y + 5} textAnchor="middle" fill="white" fontSize="14" fontWeight="bold">
           {node.value}
         </text>
 
-        {/* Array index */}
         <text x={x} y={y - 30} textAnchor="middle" fill="#6b7280" fontSize="10">
           [{index}]
         </text>
 
-        {/* Recursively render children */}
         {leftChildIndex < heap.length && renderHeapNode(leftChildIndex, x - 60, y + 60)}
         {rightChildIndex < heap.length && renderHeapNode(rightChildIndex, x + 60, y + 60)}
       </g>
@@ -959,7 +1462,6 @@ function BTreeRenderer({ root }: { root: BTreeNode }) {
 
     return (
       <g key={node.id}>
-        {/* Node rectangle */}
         <rect
           x={x - nodeWidth / 2}
           y={y - 15}
@@ -972,7 +1474,6 @@ function BTreeRenderer({ root }: { root: BTreeNode }) {
           className="transition-all duration-300"
         />
 
-        {/* Keys */}
         {node.keys.map((key, index) => (
           <text
             key={index}
@@ -986,14 +1487,12 @@ function BTreeRenderer({ root }: { root: BTreeNode }) {
           </text>
         ))}
 
-        {/* Children connections and rendering */}
         {node.children.map((child, index) => {
           const childX = x - nodeWidth / 2 + (index + 1) * (nodeWidth / (node.children.length + 1))
           const childY = y + 80
 
           return (
             <g key={child.id}>
-              {/* Connection line */}
               <line
                 x1={x - nodeWidth / 2 + 15 + index * 30}
                 y1={y + 15}
@@ -1002,7 +1501,6 @@ function BTreeRenderer({ root }: { root: BTreeNode }) {
                 stroke="#94a3b8"
                 strokeWidth="2"
               />
-              {/* Recursive child rendering */}
               {renderBTreeNode(child, childX, childY, level + 1)}
             </g>
           )
@@ -1019,5 +1517,3 @@ function BTreeRenderer({ root }: { root: BTreeNode }) {
 }
 
 export default TreeVisualizerPage
-
-

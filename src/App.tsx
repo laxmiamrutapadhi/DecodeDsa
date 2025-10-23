@@ -4,6 +4,7 @@ import Lenis from "lenis";
 import Sidebar from "./components/sidebar";
 import PageLoader from "./components/PageLoader";
 import { useTheme } from "./contexts/ThemeContext";
+import ScrollToTop from "./components/scrollToTop";
 import AIAssistantPage from "./pages/AIAssistantPage"
 import ScrollToTop from "./components/scrollToTop";
 
@@ -35,6 +36,7 @@ const HashingPage = lazy(() => import("./pages/array-algorithms/hashing"));
 const MonotonicStackPage = lazy(
   () => import("./pages/array-algorithms/monotonic-stack")
 );
+const SievePage = lazy(() => import("./pages/array-algorithms/sieve"));
 const BitManipulationPage = lazy(
   () => import("./pages/array-algorithms/bit-manipulation")
 );
@@ -54,11 +56,16 @@ const LoadingFallback = ({ isDark }: { isDark: boolean }) => (
 
 function App() {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { theme } = useTheme();
 
   useEffect(() => {
     // initial load time
+    const loader = document.getElementById("initial-loader");
+    if (loader) {
+      loader.style.display = "none";
+    }
     const timer = setTimeout(() => {
       setIsInitialLoad(false);
     }, 2000);
@@ -120,6 +127,7 @@ useEffect(() => {
               <Route path="/array-algorithms/sliding-window" element={<SlidingWindowPage />} />
               <Route path="/array-algorithms/hashing" element={<HashingPage />} />
               <Route path="/array-algorithms/monotonic-stack" element={<MonotonicStackPage />} />
+              <Route path="/array-algorithms/sieve" element={<SievePage />} />
               <Route path="/array-algorithms/bit-manipulation" element={<BitManipulationPage />} />
               <Route path="/array-algorithms/2d-arrays" element={<TwoDArraysPage />} />
 
