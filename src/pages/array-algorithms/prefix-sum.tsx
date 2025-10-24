@@ -247,7 +247,7 @@ range_sum = prefix_sum[end + 1] - prefix_sum[start]`,
                 type="text"
                 value={arrayInput}
                 onChange={(e) => setArrayInput(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 focus:ring-2 focus:ring-purple-500 dark:text-white"
                 placeholder="e.g., 1, 2, 3, 4, 5"
               />
             </div>
@@ -264,7 +264,7 @@ range_sum = prefix_sum[end + 1] - prefix_sum[start]`,
                   type="text"
                   value={rangeInput}
                   onChange={(e) => setRangeInput(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 focus:ring-2 focus:ring-purple-500 dark:text-white"
                   placeholder="e.g., 1,3"
                 />
               </div>
@@ -374,8 +374,8 @@ range_sum = prefix_sum[end + 1] - prefix_sum[start]`,
                   {showFullCode ? "Show Step Code" : "Show Full Code"}
                 </button>
               </div>
-              <pre className="bg-gray-50 dark:bg-slate-700 p-4 rounded-lg overflow-x-auto">
-                <code className="text-sm text-gray-800">
+              <pre className="bg-gray-50 dark:bg-slate-900 p-4 rounded-lg overflow-x-auto">
+                <code className="text-sm text-gray-800 dark:text-gray-100">
                   {showFullCode ? getFullCode() : steps[currentStep].code}
                 </code>
               </pre>
