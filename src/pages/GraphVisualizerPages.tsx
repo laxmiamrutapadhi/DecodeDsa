@@ -870,7 +870,10 @@ function GraphVisualizerPage() {
         isHighlighted:
           (step.edgeFrom === edge.from && step.edgeTo === edge.to) ||
           (step.edgeFrom === edge.to && step.edgeTo === edge.from),
-        isVisited: step.visited?.has(edge.from) && step.visited?.has(edge.to) || step.mst?.some((e: GraphEdge) => e.id === edge.id),
+        isVisited:
+        ((step.visited?.has(edge.from) && step.visited?.has(edge.to))
+        || step.mst?.some((e: GraphEdge) => e.id === edge.id)),
+
       })),
     }));
     if (step?.message) {
