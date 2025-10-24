@@ -764,6 +764,95 @@ function GraphVisualizerPage() {
     addToHistory(`🛣️ Started Dijkstra from node ${startValue}`);
   };
 
+  const runKruskal = async () => {
+    if (!graph.isWeighted) {
+      addToHistory("❌ Error: Kruskal's algorithm requires a weighted graph");
+      return;
+    }
+
+    setIsAnimating(true);
+    const steps: any[] = [];
+    const mst: GraphEdge[] = [];
+    let mstWeight = 0;
+
+    // 1. Sort all edges by weight
+    const sortedEdges = [...graph.edges].sort((a, b) => (a.weight || 0) - (b.weight || 0));
+
+    // 2. Initialize DSU
+    const parent = new Map<string, string>();
+    graph.nodes.forEach(node => parent.set(node.id, node.id));
+
+    const find = (i: string): string => {
+      if (parent.get(i) === i) return i;
+      const root = find(parent.get(i)!);
+      parent.set(i, root); // Path compression
+      return root;
+    };
+
+    const union = (i: string, j: string) => {
+      const rootI = find(i);
+      const rootJ = find(j);
+      if (rootI !== rootJ) {
+        parent.set(rootI, rootJ);
+        return true;
+      }
+      return false;
+    };
+
+    steps.push({
+      type: "start",
+      message: "Starting Kruskal's Algorithm: Edges sorted by weight.",
+      mst: [],
+      mstWeight: 0,
+    });
+
+    for (const edge of sortedEdges) {
+      const fromRoot = find(edge.from);
+      const toRoot = find(edge.to);
+
+      steps.push({
+        type: "check",
+        edgeId: edge.id,
+        message: `Checking edge (${graph.nodes.find(n => n.id === edge.from)?.value} - ${graph.nodes.find(n => n.id === edge.to)?.value}) with weight ${edge.weight}.`,
+        mst: [...mst],
+        mstWeight,
+      });
+
+      if (fromRoot !== toRoot) {
+        mst.push(edge);
+        mstWeight += edge.weight || 0;
+        union(edge.from, edge.to);
+
+        steps.push({
+          type: "add",
+          edgeId: edge.id,
+          message: `Adding edge to MST. No cycle formed. MST weight: ${mstWeight}`,
+          mst: [...mst],
+          mstWeight,
+        });
+      } else {
+        steps.push({
+          type: "skip",
+          edgeId: edge.id,
+          message: `Skipping edge. It forms a cycle.`,
+          mst: [...mst],
+          mstWeight,
+        });
+      }
+    }
+
+    steps.push({
+      type: "complete",
+      message: `Kruskal's Algorithm complete. Final MST weight: ${mstWeight}`,
+      mst: [...mst],
+      mstWeight,
+    });
+
+    setAlgorithmSteps(steps);
+    setCurrentStep(0);
+    addToHistory("🌳 Started Kruskal's Algorithm");
+  };
+
   // Helper to apply a single step to the graph and log it
   const applyStep = useCallback((step: any, index: number) => {
     setGraph((prev) => ({
@@ -781,7 +870,7 @@ function GraphVisualizerPage() {
         isHighlighted:
           (step.edgeFrom === edge.from && step.edgeTo === edge.to) ||
           (step.edgeFrom === edge.to && step.edgeTo === edge.from),
-        isVisited: step.visited?.has(edge.from) && step.visited?.has(edge.to),
+        isVisited: step.visited?.has(edge.from) && step.visited?.has(edge.to) || step.mst?.some((e: GraphEdge) => e.id === edge.id),
       })),
     }));
     if (step?.message) {
@@ -935,6 +1024,9 @@ function GraphVisualizerPage() {
       case "topological":
         runTopologicalSort();
         break;
+      case "kruskal":
+        runKruskal();
+        break;
       default:
         addToHistory(`❌ Algorithm ${selectedAlgorithm} not implemented yet`);
     }
@@ -1069,6 +1161,7 @@ function GraphVisualizerPage() {
                     "dfs",
                     "dijkstra",
                     "bellman-ford",
+                    "kruskal",
                     "topological",
                   ] as AlgorithmType[]
                 ).map((algorithm) => (
@@ -2136,7 +2229,50 @@ def get_shortest_path(parents, start, end):
                 raise ValueError("Graph contains negative cycle")
     
     return distances, parents`,
-    kruskal: "# Kruskal's algorithm implementation not available",
+    kruskal: `class DSU:
+    def __init__(self, vertices):
+        self.parent = {v: v for v in vertices}
+        self.rank = {v: 0 for v in vertices}
+
+    def find(self, i):
+        if self.parent[i] == i:
+            return i
+        self.parent[i] = self.find(self.parent[i])  # Path compression
+        return self.parent[i]
+
+    def union(self, i, j):
+        root_i = self.find(i)
+        root_j = self.find(j)
+        if root_i != root_j:
+            # Union by rank
+            if self.rank[root_i] > self.rank[root_j]:
+                self.parent[root_j] = root_i
+            else:
+                self.parent[root_i] = root_j
+                if self.rank[root_i] == self.rank[root_j]:
+                    self.rank[root_j] += 1
+            return True
+        return False
+
+def kruskal(graph):
+    """Kruskal's algorithm for Minimum Spanning Tree"""
+    # graph = (vertices, edges with weights)
+    vertices, edges = graph
+    mst = []
+    mst_weight = 0
+    
+    # Sort edges by weight
+    sorted_edges = sorted(edges, key=lambda item: item[2])
+    
+    dsu = DSU(vertices)
+    
+    for edge in sorted_edges:
+        u, v, weight = edge
+        if dsu.union(u, v):
+            mst.append(edge)
+            mst_weight += weight
+            
+    return mst, mst_weight`,
     prim: "# Prim's algorithm implementation not available",
     topological: `from collections import deque
 
