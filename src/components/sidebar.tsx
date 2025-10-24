@@ -119,24 +119,24 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
       {/* Menu Button */}
         <button
           onClick={onToggle}
-          className={`fixed z-50 p-3 text-white transition-all duration-300 shadow-lg 
+          className={`fixed z-[8999] p-3 text-white transition-all duration-300 shadow-lg 
             bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl hover:shadow-xl
-            top-[1.5rem] ${isOpen ? "left-[14rem]" : "left-4"}`}
+           ${isOpen ? "left-[14rem] top-[1.5rem]" : "left-4 top-[1.2rem]"}`}
           aria-label="Toggle menu"
         >
           <div
             className={`transition-transform duration-300 ease-in-out ${
               isOpen ? "rotate-90" : "rotate-0"
-            }`}
+            } `}
           >
-            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isOpen ? <X className="w-5 h-5 z-[9999]" /> : <Menu className="w-3 h-3 z-[9999]" />}
           </div>
         </button>
 
         {/* Overlay */}
         {isOpen && (
           <div
-            className="fixed inset-0 z-30 bg-black/50"
+            className="fixed inset-0 z-60 bg-black/50"
             onClick={onToggle}
           />
         )}
@@ -144,7 +144,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
       {/* Sidebar */}
       <aside
         data-lenis-prevent
-        className={`fixed top-0 left-0 h-screen w-72 bg-gradient-to-b from-slate-50 via-slate-100 to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 text-slate-800 dark:text-white shadow-2xl z-40 transition-all duration-300 flex flex-col overflow-y-auto overflow-x-hidden ${
+        className={`fixed top-0 left-0 h-screen w-72 bg-gradient-to-b from-slate-50 via-slate-100 to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 text-slate-800 dark:text-white shadow-2xl z-[7777] transition-all duration-300 flex flex-col overflow-y-auto overflow-x-hidden ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >

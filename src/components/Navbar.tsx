@@ -41,10 +41,10 @@ const Navbar: React.FC = () => {
         {/* Logo/Site Name - Use a Link for routing */}
         <Link 
             to="/" 
-            className="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white"
+            className="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white ml-[2rem]"
         >
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500">
-            <Brain className="w-5 h-5 text-white" />
+          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500">
+            <Brain className="w-6 h-6 text-white" />
           </div>
           DecodeDSA
         </Link>

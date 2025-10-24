@@ -86,6 +86,7 @@ export default function Page() {
         { name: "Binary Tree", path: "/data-structures/binary-tree", description: "Hierarchical tree structure" },
         { name: "Stack", path: "/data-structures/stack", description: "LIFO data structure" },
         { name: "Queue", path: "/data-structures/queue", description: "FIFO data structure" },
+        { name: "Trie", path: "/data-structures/trie", description: "Trie data structure and algorithms" },
         { name: "Graph", path: "/data-structures/graph", description: "Graph data structure and algorithms" },
         { name: "Deque", path: "/data-structures/deque", description: "Deque data structure and algorithms" },
         { name: "Trie (Prefix Tree)", path: "/data-structures/trie", description: "Trie data structure and problems" },
