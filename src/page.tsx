@@ -505,22 +505,22 @@ export default function Page() {
                   </a>
                 </li>
                 <li>
-                  <button className="inline-flex items-center transition-all hover:text-white hover:translate-x-1 group">
+                  <a href="#how-it-works" className="inline-flex items-center transition-all hover:text-white hover:translate-x-1 group">
                     <ChevronRight className="w-4 h-4 mr-1 transition-opacity opacity-0 group-hover:opacity-100" />
                     How It Works
-                  </button>
+                  </a>
                 </li>
                 <li>
-                  <button className="inline-flex items-center transition-all hover:text-white hover:translate-x-1 group">
+                  <a href="#faq" className="inline-flex items-center transition-all hover:text-white hover:translate-x-1 group">
                     <ChevronRight className="w-4 h-4 mr-1 transition-opacity opacity-0 group-hover:opacity-100" />
                     FAQ
-                  </button>
+                  </a>
                 </li>
                 <li>
-                  <button className="inline-flex items-center transition-all hover:text-white hover:translate-x-1 group">
+                  <a href="/documentation" className="inline-flex items-center transition-all hover:text-white hover:translate-x-1 group">
                     <ChevronRight className="w-4 h-4 mr-1 transition-opacity opacity-0 group-hover:opacity-100" />
                     Documentation
-                  </button>
+                  </a>
                 </li>
               </ul>
             </div>
