@@ -25,6 +25,7 @@ const TwoPointerPage = lazy(
   () => import("./pages/array-algorithms/two-pointer")
 );
 const PrefixSumPage = lazy(() => import("./pages/array-algorithms/prefix-sum"));
+const SegmentTreePage = lazy(() => import("./pages/array-algorithms/segment-tree"));
 const KadanesPage = lazy(() => import("./pages/array-algorithms/kadanes"));
 const SlidingWindowPage = lazy(
   () => import("./pages/array-algorithms/sliding-window")
@@ -125,6 +126,7 @@ useEffect(() => {
               <Route path="/array-algorithms" element={<ArrayAlgorithmsPage />} />
               <Route path="/array-algorithms/two-pointer" element={<TwoPointerPage />} />
               <Route path="/array-algorithms/prefix-sum" element={<PrefixSumPage />} />
+              <Route path="/array-algorithms/segment-tree" element={<SegmentTreePage />} />
               <Route path="/array-algorithms/kadanes" element={<KadanesPage />} />
               <Route path="/array-algorithms/sliding-window" element={<SlidingWindowPage />} />
               <Route path="/array-algorithms/hashing" element={<HashingPage />} />
