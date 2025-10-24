@@ -498,30 +498,30 @@ export default function Page() {
             <div>
               <h4 className="mb-4 text-lg font-bold text-white">Resources</h4>
               <ul className="space-y-3 text-sm">
-                <li>
-                  <a href="#features" className="inline-flex items-center transition-all hover:text-white hover:translate-x-1 group">
-                    <ChevronRight className="w-4 h-4 mr-1 transition-opacity opacity-0 group-hover:opacity-100" />
-                    Features
-                  </a>
-                </li>
-                <li>
-                  <a href="#how-it-works" className="inline-flex items-center transition-all hover:text-white hover:translate-x-1 group">
-                    <ChevronRight className="w-4 h-4 mr-1 transition-opacity opacity-0 group-hover:opacity-100" />
-                    How It Works
-                  </a>
-                </li>
-                <li>
-                  <a href="#faq" className="inline-flex items-center transition-all hover:text-white hover:translate-x-1 group">
-                    <ChevronRight className="w-4 h-4 mr-1 transition-opacity opacity-0 group-hover:opacity-100" />
-                    FAQ
-                  </a>
-                </li>
-                <li>
-                  <a href="/documentation" className="inline-flex items-center transition-all hover:text-white hover:translate-x-1 group">
-                    <ChevronRight className="w-4 h-4 mr-1 transition-opacity opacity-0 group-hover:opacity-100" />
-                    Documentation
-                  </a>
-                </li>
+          <li>
+            <a href="#features" className="inline-flex items-center transition-all hover:text-white hover:translate-x-1 group">
+              <ChevronRight className="w-4 h-4 mr-1 transition-opacity opacity-0 group-hover:opacity-100" />
+              Features
+            </a>
+          </li>
+          <li>
+            <a href="#how-it-works" className="inline-flex items-center transition-all hover:text-white hover:translate-x-1 group">
+              <ChevronRight className="w-4 h-4 mr-1 transition-opacity opacity-0 group-hover:opacity-100" />
+              How It Works
+            </a>
+          </li>
+          <li>
+            <a href="#faq" className="inline-flex items-center transition-all hover:text-white hover:translate-x-1 group">
+              <ChevronRight className="w-4 h-4 mr-1 transition-opacity opacity-0 group-hover:opacity-100" />
+              FAQ
+            </a>
+          </li>
+          <li>
+            <a href="/documentation" className="inline-flex items-center transition-all hover:text-white hover:translate-x-1 group">
+              <ChevronRight className="w-4 h-4 mr-1 transition-opacity opacity-0 group-hover:opacity-100" />
+              Documentation
+            </a>
+          </li>
               </ul>
             </div>
 
