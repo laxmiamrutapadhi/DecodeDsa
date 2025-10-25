@@ -144,7 +144,7 @@ export default function AIAssistantPage(): JSX.Element {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4" >
         {/* Left column: quick actions */}
         <aside className="lg:col-span-1 bg-white dark:bg-gray-800 rounded-lg shadow p-4 border">
           <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Quick Prompts</h3>
@@ -172,8 +172,8 @@ export default function AIAssistantPage(): JSX.Element {
         </aside>
 
         {/* Main chat area */}
-        <section className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow border flex flex-col" style={{ minHeight: 520 }}>
-          <div className="flex-1 overflow-auto p-6 space-y-4" aria-live="polite">
+        <section className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow border flex flex-col" style={{ height: "620px", maxHeight: "620px" }}>
+          <div className="flex-1 overflow-auto p-6 space-y-4 scroll-smooth" aria-live="polite">
             {messages.map((message) => (
               <div key={message.id} className={`flex items-start gap-3 ${message.from === "user" ? "justify-end" : "justify-start"}`}>
                 {/* Avatar */}
