@@ -29,7 +29,7 @@ const SortingVisualizer: React.FC<SortingVisualizerProps> = ({ algorithm, inputA
   const [sortResult, setSortResult] = useState<SortResult | null>(null)
   const [copiedStep, setCopiedStep] = useState(false)
   const [copiedFull, setCopiedFull] = useState(false)
-  const [showCompleteCode, setShowCompleteCode] = useState(false) // New state for showing complete code
+  const [showCompleteCode, setShowCompleteCode] = useState(false)
 
   const copyToClipboard = async (
     text: string,
@@ -77,57 +77,34 @@ const SortingVisualizer: React.FC<SortingVisualizerProps> = ({ algorithm, inputA
     })
   }, [algorithm, inputArray])
 
-  // Keyboard navigation accessibility
+  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "ArrowLeft") {
-        if (currentStep > 0) {
-          setCurrentStep(currentStep - 1)
-        }
+        if (currentStep > 0) setCurrentStep(currentStep - 1)
       } else if (event.key === "ArrowRight") {
-        if (currentStep < steps.length - 1) {
-          setCurrentStep(currentStep + 1)
-        }
+        if (currentStep < steps.length - 1) setCurrentStep(currentStep + 1)
       }
     }
-
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [currentStep, steps.length])
 
-  // Auto-play functionality
+  // Auto-play
   useEffect(() => {
     let interval: NodeJS.Timeout
     if (isPlaying && currentStep < steps.length - 1) {
-      interval = setInterval(() => {
-        setCurrentStep(prev => prev + 1)
-      }, playSpeed)
+      interval = setInterval(() => setCurrentStep(prev => prev + 1), playSpeed)
     } else if (currentStep >= steps.length - 1) {
       setIsPlaying(false)
     }
     return () => clearInterval(interval)
   }, [isPlaying, currentStep, steps.length, playSpeed])
 
-  const handleNext = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1)
-    }
-  }
-
-  const handlePrevious = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1)
-    }
-  }
-
-  const handleReset = () => {
-    setCurrentStep(0)
-    setIsPlaying(false)
-  }
-
-  const togglePlay = () => {
-    setIsPlaying(!isPlaying)
-  }
+  const handleNext = () => { if (currentStep < steps.length - 1) setCurrentStep(currentStep + 1) }
+  const handlePrevious = () => { if (currentStep > 0) setCurrentStep(currentStep - 1) }
+  const handleReset = () => { setCurrentStep(0); setIsPlaying(false) }
+  const togglePlay = () => { setIsPlaying(!isPlaying) }
 
   const getElementColor = (index: number): string => {
     const step = steps[currentStep]
@@ -148,23 +125,19 @@ const SortingVisualizer: React.FC<SortingVisualizerProps> = ({ algorithm, inputA
   const getElementColorHex = (index: number): string => {
     const step = steps[currentStep]
     if (!step) return "#3b82f6"
-
     if (step.sorted?.includes(index)) return "#22c55e"
     if (step.swapping?.includes(index)) return "#ef4444"
     if (step.comparing?.includes(index)) return "#eab308"
     if (step.pivot === index) return "#a855f7"
-
     if (step.dutchFlags?.lowSection.includes(index)) return "#ec4899"
     if (step.dutchFlags?.midSection.includes(index)) return "#ffffff"
     if (step.dutchFlags?.highSection.includes(index)) return "#3b82f6"
-
     return "#3b82f6"
   }
 
   const prepareCanvasElements = () => {
     const step = steps[currentStep]
     if (!step) return []
-
     return step.array.map((value, index) => ({
       value,
       index,
@@ -174,79 +147,63 @@ const SortingVisualizer: React.FC<SortingVisualizerProps> = ({ algorithm, inputA
 
   if (steps.length === 0) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-gray-500">Loading visualization...</div>
+      <div className="flex items-center justify-center p-8 dark:bg-gray-900 dark:text-gray-300">
+        <div className="text-gray-500 dark:text-gray-300">Loading visualization...</div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 dark:bg-gray-800 dark:text-gray-100">
       {sortResult && (
-        <Card className="border-2 border-dashed border-gray-300">
+        <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 dark:bg-gray-800">
           <CardContent className="p-4 md:p-6">
             <div className="flex flex-col md:flex-row items-center justify-between gap-2">
               <div className="flex items-center justify-between space-x-3">
-                <div className="p-2 bg-blue-100 rounded-full">
-                  <ArrowUpDown className="w-6 h-6 text-blue-600" />
+                <div className="p-2 bg-blue-100 rounded-full dark:bg-blue-900">
+                  <ArrowUpDown className="w-6 h-6 text-blue-600 dark:text-blue-300" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold dark:text-black">
-                    {algorithm.name} Statistics
-                  </h3>
-                  <p className="text-gray-600">
+                  <h3 className="text-lg font-semibold dark:text-white">{algorithm.name} Statistics</h3>
+                  <p className="text-gray-600 dark:text-gray-300">
                     Step-by-step visualization of the sorting process
                   </p>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-4 text-center mt-3">
                 <div className="flex flex-col gap-1 md:gap-0">
-                  <div className="text-2xl font-bold text-blue-600">
-                    {sortResult.comparisons}
-                  </div>
-                  <div className="text-sm text-gray-500">Comparisons</div>
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{sortResult.comparisons}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-300">Comparisons</div>
                 </div>
                 <div className="flex flex-col gap-1 md:gap-0">
-                  <div className="text-2xl font-bold text-red-600">
-                    {sortResult.swaps}
-                  </div>
-                  <div className="text-sm text-gray-500">Swaps</div>
+                  <div className="text-2xl font-bold text-red-600 dark:text-red-400">{sortResult.swaps}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-300">Swaps</div>
                 </div>
                 <div className="flex flex-col gap-1 md:gap-0">
-                  <div className="text-2xl font-bold text-purple-600">
-                    {sortResult.steps}
-                  </div>
-                  <div className="text-sm text-gray-500">Total Steps</div>
+                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{sortResult.steps}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-300">Total Steps</div>
                 </div>
               </div>
             </div>
             {sortResult.isDutchFlag && (
               <div className="mt-4 border-t pt-4 border-gray-200 dark:border-gray-700">
-                <h4 className="font-medium text-sm mb-2">Dutch Flag Legend:</h4>
+                <h4 className="font-medium text-sm mb-2 dark:text-gray-200">Dutch Flag Legend:</h4>
                 <div className="flex flex-wrap gap-3">
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 bg-pink-500 rounded-sm"></div>
-                    <span className="text-xs text-gray-600 dark:text-gray-300">
-                      Less than pivot
-                    </span>
+                    <span className="text-xs text-gray-600 dark:text-gray-300">Less than pivot</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-white border border-gray-300 rounded-sm"></div>
-                    <span className="text-xs text-gray-600 dark:text-gray-300">
-                      Equal to pivot
-                    </span>
+                    <div className="w-4 h-4 bg-white border border-gray-300 rounded-sm dark:border-gray-500"></div>
+                    <span className="text-xs text-gray-600 dark:text-gray-300">Equal to pivot</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 bg-blue-500 rounded-sm"></div>
-                    <span className="text-xs text-gray-600 dark:text-gray-300">
-                      Greater than pivot
-                    </span>
+                    <span className="text-xs text-gray-600 dark:text-gray-300">Greater than pivot</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 bg-purple-500 rounded-sm"></div>
-                    <span className="text-xs text-gray-600 dark:text-gray-300">
-                      Pivot
-                    </span>
+                    <span className="text-xs text-gray-600 dark:text-gray-300">Pivot</span>
                   </div>
                 </div>
               </div>
@@ -255,22 +212,16 @@ const SortingVisualizer: React.FC<SortingVisualizerProps> = ({ algorithm, inputA
         </Card>
       )}
 
-      <div className="w-full bg-white rounded-lg p-4 md:p-6 shadow-sm border">
+      {/* Array visualization container */}
+      <div className="w-full bg-white dark:bg-gray-800 rounded-lg p-4 md:p-6 shadow-sm border dark:border-gray-700">
         <div className="w-full flex items-center justify-between mb-4">
-          <h3
-            className="w-[60%] text-base md:text-lg font-semibold flex items-center"
-            title="Array Visualization"
-          >
-            <ArrowUpDown className="w-6 h-6 mr-2 text-blue-600" />
-            <span className="truncate dark:text-black">
-              Array Visualization
-            </span>
+          <h3 className="w-[60%] text-base md:text-lg font-semibold flex items-center" title="Array Visualization">
+            <ArrowUpDown className="w-6 h-6 mr-2 text-blue-600 dark:text-blue-300" />
+            <span className="truncate dark:text-white">Array Visualization</span>
           </h3>
-          <div className="text-sm md:text-base text-gray-600 text-right flex flex-col md:flex-row md:gap-1">
+          <div className="text-sm md:text-base text-gray-600 dark:text-gray-300 text-right flex flex-col md:flex-row md:gap-1">
             <span>Algorithm:</span>
-            <span className="font-semibold text-blue-600">
-              {algorithm.name}
-            </span>
+            <span className="font-semibold text-blue-600 dark:text-blue-300">{algorithm.name}</span>
           </div>
         </div>
 
@@ -278,80 +229,63 @@ const SortingVisualizer: React.FC<SortingVisualizerProps> = ({ algorithm, inputA
           <div className="flex justify-center">
             <ZoomableArrayCanvas
               elements={prepareCanvasElements()}
-              width={Math.min(
-                1000,
-                typeof window !== "undefined" ? window.innerWidth - 100 : 1000
-              )}
+              width={Math.min(1000, typeof window !== "undefined" ? window.innerWidth - 100 : 1000)}
               height={200}
             />
           </div>
         ) : (
-          <div className="flex flex-wrap items-center justify-center gap-2 p-4 bg-gray-50 rounded-lg min-h-[80px]">
+          <div className="flex flex-wrap items-center justify-center gap-2 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg min-h-[80px]">
             {steps[currentStep]?.array.map((value, index) => (
               <div key={index} className="relative">
-                <div
-                  className={`w-12 h-12 flex items-center justify-center text-white rounded-md font-semibold transition-all duration-300 ${getElementColor(
-                    index
-                  )}`}
-                >
+                <div className={`w-12 h-12 flex items-center justify-center text-white rounded-md font-semibold transition-all duration-300 ${getElementColor(index)}`}>
                   {value}
                 </div>
-                <div className="text-xs text-gray-500 text-center mt-1">
-                  {index}
-                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-300 text-center mt-1">{index}</div>
               </div>
             ))}
           </div>
         )}
       </div>
 
+      {/* Step description and code section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
+        <Card className="dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
-              <div className="p-1.5 bg-blue-100 rounded-full">
-                <ArrowUpDown className="w-5 h-5 text-blue-600" />
+            <CardTitle className="text-lg font-semibold flex items-center gap-2 dark:text-white">
+              <div className="p-1.5 bg-blue-100 dark:bg-blue-900 rounded-full">
+                <ArrowUpDown className="w-5 h-5 text-blue-600 dark:text-blue-300" />
               </div>
               Step Description
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="min-h-[100px] text-gray-700">
+            <div className="min-h-[100px] text-gray-700 dark:text-gray-300">
               {steps[currentStep]?.description || "No description available."}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
-              <div className="p-1.5 bg-purple-100 rounded-full">
-                <Code className="w-5 h-5 text-purple-600" />
+            <CardTitle className="text-lg font-semibold flex items-center gap-2 dark:text-white">
+              <div className="p-1.5 bg-purple-100 dark:bg-purple-900 rounded-full">
+                <Code className="w-5 h-5 text-purple-600 dark:text-purple-300" />
               </div>
               Code Execution
               <Button
-                  variant="secondary"
-                  size="sm"
-                  className="ml-auto"
-                  onClick={() =>
-                    copyToClipboard(
-                      steps[currentStep]?.code || "",
-                      setCopiedStep
-                    )
-                  }
-                >
-                  {copiedStep ? (
-                    <Check className="h-4 w-4 mr-1" />
-                  ) : (
-                    <Copy className="h-4 w-4 mr-1" />
-                  )}
-                  {copiedStep ? "Copied" : "Copy"}
-                </Button>
+                variant="secondary"
+                size="sm"
+                className="ml-auto"
+                onClick={() => copyToClipboard(steps[currentStep]?.code || "", setCopiedStep)}
+              >
+                {copiedStep ? <Check className="h-4 w-4 mr-1" /> : <Copy className="h-4 w-4 mr-1" />}
+                {copiedStep ? "Copied" : "Copy"}
+              </Button>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="bg-gray-50 p-4 rounded-md overflow-x-auto">
-              <pre className="text-sm text-gray-800 whitespace-pre-wrap">
+            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-md overflow-x-auto">
+              <pre className="text-sm text-gray-800 dark:text-gray-100 whitespace-pre-wrap">
                 {steps[currentStep]?.code || "No code available."}
               </pre>
             </div>
@@ -359,70 +293,44 @@ const SortingVisualizer: React.FC<SortingVisualizerProps> = ({ algorithm, inputA
         </Card>
       </div>
 
-      {/* Complete Code Section */}
+      {/* Complete code */}
       {showCompleteCode && (
-        <Card>
+        <Card className="dark:bg-gray-800 dark:border-gray-700">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
-              <div className="p-1.5 bg-green-100 rounded-full">
-                <Code className="w-5 h-5 text-green-600" />
+            <CardTitle className="text-lg font-semibold flex items-center gap-2 dark:text-white">
+              <div className="p-1.5 bg-green-100 dark:bg-green-900 rounded-full">
+                <Code className="w-5 h-5 text-green-600 dark:text-green-300" />
               </div>
               Complete Algorithm Implementation
               <Button
                 variant="secondary"
                 size="sm"
                 className="ml-auto"
-                onClick={() =>
-                  copyToClipboard(algorithm.code, setCopiedFull)
-                }
+                onClick={() => copyToClipboard(algorithm.code, setCopiedFull)}
               >
-                {copiedFull ? (
-                  <Check className="h-4 w-4 mr-1" />
-                ) : (
-                  <Copy className="h-4 w-4 mr-1" />
-                )}
+                {copiedFull ? <Check className="h-4 w-4 mr-1" /> : <Copy className="h-4 w-4 mr-1" />}
                 {copiedFull ? "Copied" : "Copy"}
               </Button>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="bg-gray-50 p-4 rounded-md overflow-x-auto">
-              <pre className="text-sm text-gray-800 whitespace-pre-wrap">
-                {algorithm.code}
-              </pre>
+            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-md overflow-x-auto">
+              <pre className="text-sm text-gray-800 dark:text-gray-100 whitespace-pre-wrap">{algorithm.code}</pre>
             </div>
           </CardContent>
         </Card>
       )}
 
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-lg border">
+      {/* Control buttons */}
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-lg border dark:border-gray-700">
         <div className="flex items-center gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handlePrevious}
-            disabled={currentStep === 0}
-          >
+          <Button variant="secondary" size="sm" onClick={handlePrevious} disabled={currentStep === 0}>
             <ArrowUpDown className="h-4 w-4 rotate-90" />
           </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={togglePlay}
-            className={isPlaying ? "bg-red-50" : ""}
-          >
-            {isPlaying ? (
-              <Pause className="h-4 w-4" />
-            ) : (
-              <Play className="h-4 w-4" />
-            )}
+          <Button variant="secondary" size="sm" onClick={togglePlay} className={isPlaying ? "bg-red-50 dark:bg-red-900" : ""}>
+            {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleNext}
-            disabled={currentStep === steps.length - 1}
-          >
+          <Button variant="secondary" size="sm" onClick={handleNext} disabled={currentStep === steps.length - 1}>
             <ArrowUpDown className="h-4 w-4 -rotate-90" />
           </Button>
           <Button variant="secondary" size="sm" onClick={handleReset}>
@@ -437,14 +345,14 @@ const SortingVisualizer: React.FC<SortingVisualizerProps> = ({ algorithm, inputA
             onClick={() => setShowCompleteCode(!showCompleteCode)}
             className={showCompleteCode ? "bg-blue-600" : ""}
           >
-           <Code className="h-4 w-4 mr-2" />
+            <Code className="h-4 w-4 mr-2" />
             {showCompleteCode ? "Hide Complete Code" : "Show Complete Code"}
           </Button>
 
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">Speed:</span>
+            <span className="text-sm text-gray-500 dark:text-gray-300">Speed:</span>
             <select
-              className="border rounded p-1 text-sm"
+              className="border rounded p-1 text-sm dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
               value={playSpeed}
               onChange={(e) => setPlaySpeed(Number(e.target.value))}
             >
@@ -457,24 +365,22 @@ const SortingVisualizer: React.FC<SortingVisualizerProps> = ({ algorithm, inputA
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">Step:</span>
-          <Badge variant="default" className="text-blue-600">
+          <span className="text-sm text-gray-500 dark:text-gray-300">Step:</span>
+          <Badge variant="default" className="text-blue-600 dark:text-black-300">
             {currentStep + 1} / {steps.length}
           </Badge>
         </div>
       </div>
 
-      {/* Original implementation section - shown at the end of visualization */}
+      {/* Original implementation */}
       {currentStep === steps.length - 1 && (
-        <div className="mt-8 p-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Code className="h-5 w-5 text-blue-600" />
+        <div className="mt-8 p-6 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 dark:text-white">
+            <Code className="h-5 w-5 text-blue-600 dark:text-blue-300" />
             Original Implementation
           </h3>
-          <div className="bg-white p-4 rounded-md shadow-sm overflow-x-auto">
-            <pre className="text-sm text-gray-800 whitespace-pre-wrap">
-              {algorithm.code}
-            </pre>
+          <div className="bg-white dark:bg-gray-700 p-4 rounded-md shadow-sm overflow-x-auto">
+            <pre className="text-sm text-gray-800 dark:text-gray-100 whitespace-pre-wrap">{algorithm.code}</pre>
           </div>
         </div>
       )}
