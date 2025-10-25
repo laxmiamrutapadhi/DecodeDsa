@@ -445,12 +445,16 @@ export default function Page() {
                 Interactive platform to master Data Structures & Algorithms through visualization. Learn, practice, and excel.
               </p>
               <div className="flex gap-3">
+                <a href="https://github.com/V-Sharanya/DecodeDsa" target="_blank" rel="noopener noreferrer">
                 <button className="flex items-center justify-center w-10 h-10 transition-all transform bg-gray-800 rounded-lg hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-500 hover:scale-110">
                   <Github className="w-5 h-5" />
                 </button>
+                </a>
+                <a href="https://www.linkedin.com/in/v-sharanya-1b60ba28b/" target="_blank" rel="noopener noreferrer">
                 <button className="flex items-center justify-center w-10 h-10 transition-all transform bg-gray-800 rounded-lg hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-500 hover:scale-110">
                   <Linkedin className="w-5 h-5" />
                 </button>
+                </a>
                 <button className="flex items-center justify-center w-10 h-10 transition-all transform bg-gray-800 rounded-lg hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-500 hover:scale-110">
                   <Twitter className="w-5 h-5" />
                 </button>
@@ -505,22 +509,23 @@ export default function Page() {
                   </a>
                 </li>
                 <li>
-                  <button className="inline-flex items-center transition-all hover:text-white hover:translate-x-1 group">
+                  <a href="#how-it-works" className="inline-flex items-center transition-all hover:text-white hover:translate-x-1 group">
                     <ChevronRight className="w-4 h-4 mr-1 transition-opacity opacity-0 group-hover:opacity-100" />
                     How It Works
-                  </button>
+                  </a>
                 </li>
                 <li>
-                  <button className="inline-flex items-center transition-all hover:text-white hover:translate-x-1 group">
+                  <a href="#faq" className="inline-flex items-center transition-all hover:text-white hover:translate-x-1 group">
                     <ChevronRight className="w-4 h-4 mr-1 transition-opacity opacity-0 group-hover:opacity-100" />
                     FAQ
-                  </button>
+                  </a>
                 </li>
                 <li>
-                  <button className="inline-flex items-center transition-all hover:text-white hover:translate-x-1 group">
+                  
+                  <a href="about" className="inline-flex items-center transition-all hover:text-white hover:translate-x-1 group">
                     <ChevronRight className="w-4 h-4 mr-1 transition-opacity opacity-0 group-hover:opacity-100" />
                     Documentation
-                  </button>
+                  </a>
                 </li>
               </ul>
             </div>

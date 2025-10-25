@@ -100,7 +100,7 @@ export default function AboutUsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white">
+      <section id="about-us" className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
         <div className="relative container mx-auto px-6 py-24 text-center">
           <div className="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-md rounded-full mb-6 font-medium">
@@ -429,12 +429,16 @@ export default function AboutUsPage() {
                 Interactive platform to master Data Structures & Algorithms through visualization. Learn, practice, and excel.
               </p>
               <div className="flex gap-3">
+                <a href="https://github.com/V-Sharanya/DecodeDsa" target="_blank" rel="noopener noreferrer">
                 <button className="w-10 h-10 bg-gray-800 hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-500 rounded-lg flex items-center justify-center transition-all transform hover:scale-110">
                   <Github className="w-5 h-5" />
                 </button>
+                </a>
+                <a href="https://www.linkedin.com/in/v-sharanya-1b60ba28b/" target="_blank" rel="noopener noreferrer">
                 <button className="w-10 h-10 bg-gray-800 hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-500 rounded-lg flex items-center justify-center transition-all transform hover:scale-110">
                   <Linkedin className="w-5 h-5" />
                 </button>
+                </a>
                 <button className="w-10 h-10 bg-gray-800 hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-500 rounded-lg flex items-center justify-center transition-all transform hover:scale-110">
                   <Twitter className="w-5 h-5" />
                 </button>
@@ -483,22 +487,22 @@ export default function AboutUsPage() {
                   </a>
                 </li>
                 <li>
-                  <button className="hover:text-white hover:translate-x-1 inline-flex items-center transition-all group">
+                  <a href="#how-it-works" className="hover:text-white hover:translate-x-1 inline-flex items-center transition-all group">
                     <ChevronRight className="w-4 h-4 mr-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                     How It Works
-                  </button>
+                  </a>
                 </li>
                 <li>
-                  <button className="hover:text-white hover:translate-x-1 inline-flex items-center transition-all group">
+                  <a href="#faq" className="hover:text-white hover:translate-x-1 inline-flex items-center transition-all group">
                     <ChevronRight className="w-4 h-4 mr-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                     FAQ
-                  </button>
+                  </a>
                 </li>
                 <li>
-                  <button className="hover:text-white hover:translate-x-1 inline-flex items-center transition-all group">
+                  <a href="about" className="hover:text-white hover:translate-x-1 inline-flex items-center transition-all group">
                     <ChevronRight className="w-4 h-4 mr-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                     Documentation
-                  </button>
+                  </a>
                 </li>
               </ul>
             </div>
