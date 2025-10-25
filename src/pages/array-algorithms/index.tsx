@@ -1,7 +1,7 @@
 "use client"
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import { Calculator, Hash, TrendingUp, Binary, Layers, Grid, ArrowRight, Target } from "lucide-react"
+import { Calculator, Hash, TrendingUp, Binary, Layers, Grid, ArrowRight, Target, Database } from "lucide-react"
 
 interface Algorithm {
   name: string
@@ -34,6 +34,16 @@ const algorithms: Algorithm[] = [
     icon: Calculator,
     color: "from-green-500 to-emerald-500",
     difficulty: "Easy",
+  },
+  {
+    name: "Segment Tree",
+    description: "Range queries and point updates using a segment tree data structure.",
+    timeComplexity: "O(n) build, O(log n) query/update",
+    spaceComplexity: "O(n)",
+    path: "/array-algorithms/segment-tree",
+    icon: Database,
+    color: "from-indigo-500 to-purple-500",
+    difficulty: "Hard",
   },
   {
     name: "Kadane's Algorithm",
